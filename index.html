@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TecTonn">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>TecTonn</title>
+
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; padding: 20px; margin: 0; }
+        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: #4dd0e1; margin-top: 0; }
+        label { font-size: 14px; margin-bottom: 5px; display: block; color: #b0bec5; }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; box-sizing: border-box; font-size: 16px; }
+        input:focus, select:focus { border-color: #4dd0e1; outline: none; }
+        button { background-color: #4dd0e1; color: #000; border: none; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+        button:hover { background-color: #26c6da; }
+        button:disabled { opacity: 0.6; cursor: wait; }
+        button.secundario { background: transparent; color: #b0bec5; border: 1px solid #333; font-weight: normal; margin-top: 5px; }
+        button.secundario:hover { background: #2c2c2c; }
+        .hidden { display: none; }
+        .materiais-box { border: 1px solid #333; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #252525; }
+
+        /* Abas Superiores: todas visíveis, sem rolagem lateral */
+        .tabs { display: flex; gap: 3px; margin-bottom: 20px; }
+        .tabs button { flex: 1 1 auto; min-width: 0; margin: 0; background: #2c2c2c; color: #b0bec5; border: 1px solid #333; font-size: 11px; padding: 10px 4px; white-space: nowrap; text-align: center; }
+        .tabs button.ativa { background: #4dd0e1; color: #000; border-color: #4dd0e1; }
+
+        /* Cards Gerais */
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .card { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 12px; text-align: center; font-size: 14px; color: #b0bec5; }
+        .card strong { display: block; font-size: 26px; color: #4dd0e1; margin-bottom: 2px; }
+
+        /* Dashboard */
+        .saudacao-box { text-align: center; margin-bottom: 20px; }
+        .saudacao-box h1 { margin: 0; font-size: 22px; color: #fff; }
+        .saudacao-box p { margin: 5px 0 0 0; color: #b0bec5; font-size: 14px; }
+        .dash-alert { display: flex; justify-content: space-between; background: #333; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
+        .dash-alert.critico { border-left: 4px solid #ff8a80; }
+        .dash-alert.ok { border-left: 4px solid #80cbc4; }
+        .btn-grande { padding: 16px; font-size: 18px; margin-bottom: 10px; }
+
+        /* Listas e OS */
+        .lista-modems { list-style: none; padding: 0; margin: 0 0 15px 0; max-height: 280px; overflow-y: auto; }
+        .lista-modems li { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .lista-modems li button { width: auto; margin: 0; padding: 4px 10px; font-size: 13px; }
+        .vazio { color: #b0bec5; font-size: 14px; text-align: center; padding: 10px 0; }
+        .msg-erro { color: #ff8a80; font-size: 14px; margin-bottom: 15px; }
+
+        .os-item { background:#252525; border:1px solid #333; border-radius:8px; padding:13px; margin:10px 0; cursor:pointer; }
+        .os-item:hover { border-color:#4dd0e1; }
+        .os-topo { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+        .os-titulo { font-weight:bold; color:#fff; }
+        .os-meta { color:#b0bec5; font-size:13px; line-height:1.5; }
+        .status { display:inline-block; padding:5px 8px; border-radius:20px; font-size:11px; font-weight:bold; text-transform: uppercase; }
+        .status-pendente { background:#5d4b00; color:#ffe082; }
+        .status-aprovado { background:#0d4b2a; color:#80cbc4; }
+        .status-reprovado { background:#5b1b1b; color:#ff8a80; }
+        .os-detalhe-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .os-campo { background:#1e1e1e; border-radius:6px; padding:9px; }
+        .os-campo small { display:block; color:#78909c; margin-bottom:3px; }
+
+        .busca { display: flex; gap: 8px; margin-bottom: 10px; }
+        .busca input { margin-bottom: 0; }
+        .busca button { width: 52px; margin: 0; font-size: 18px; border: 1px solid #333; }
+
+        @font-face { font-family: 'TecTonn'; src: url('fonte-tectonn.ttf') format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
+        .marca { font-family: 'TecTonn', 'Poppins', 'Segoe UI', sans-serif; font-weight: 700; font-style: italic; letter-spacing: 0.5px; text-align: center; line-height: 1.1; }
+        .marca .tec { color: #ffffff; }
+        .marca .tonn { color: #4dd0e1; text-shadow: 0 0 18px rgba(77,208,225,0.35); }
+        .marca-grande { font-size: 44px; margin: 4px 0 6px; }
+        .marca-pequena { font-size: 20px; margin: 0 0 14px; }
+
+        html, body { overscroll-behavior-y: contain; }
+        button { -webkit-tap-highlight-color: transparent; }
+
+        .sync-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:15px; font-size:12px; color:#b0bec5; }
+        .sync-bar button { width:auto; margin:0; padding:8px 12px; font-size:13px; flex:0 0 auto; }
+        #pendencias button { margin-top:0; }
+
+        @media (max-width: 420px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .tabs button { font-size: 10.5px; padding: 10px 2px; }
+        }
+
+        @media print {
+            body { background:#fff; color:#000; padding:0; }
+            body * { visibility:hidden; }
+            #os-detalhe, #os-detalhe * { visibility:visible; }
+            #os-detalhe { position:absolute; left:0; top:0; width:100%; background:#fff; border:0; }
+            #os-detalhe .os-campo { background:#f5f5f5; color:#000; }
+            #os-detalhe span, h3 { color:#000 !important; }
+            #os-detalhe button { display:none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div class="container" id="login-screen">
+        <div style="background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:18px;">
+            <img src="logo.jpg" alt="TecFibras Telecom" style="width:100%;display:block;">
+        </div>
+        <div class="marca marca-grande"><span class="tec">Tec</span><span class="tonn">Tonn</span></div>
+        <p style="text-align:center;color:#b0bec5;margin:0 0 22px;font-size:14px;">Acesso Técnico</p>
+        <input type="email" id="email" placeholder="E-mail de acesso" autocomplete="username">
+        <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
+        <button id="btn-login" onclick="fazerLogin()">Entrar no Sistema</button>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div class="container hidden" id="app-screen">
+
+        <div class="marca marca-pequena"><span class="tec">Tec</span><span class="tonn">Tonn</span></div>
+
+        <div class="tabs">
+            <button id="tab-inicio" class="ativa" onclick="mostrarAba('inicio')">Início</button>
+            <button id="tab-os" onclick="mostrarAba('os')">Lançar OS</button>
+            <button id="tab-servicos" onclick="mostrarAba('servicos')">Serviços</button>
+            <button id="tab-estoque" onclick="mostrarAba('estoque')">Estoque</button>
+            <button id="tab-admin" class="hidden" onclick="mostrarAba('admin')">Admin</button>
+        </div>
+
+        <!-- ABA: INÍCIO -->
+        <div id="pane-inicio">
+            <div class="saudacao-box">
+                <h1 id="dash-saudacao">Bom dia!</h1>
+                <p id="dash-data"></p>
+            </div>
+
+            <div class="sync-bar">
+                <span id="sync-status">Atualizando...</span>
+                <button id="btn-sync" class="secundario" onclick="sincronizarTudo(true)">🔄 Sincronizar</button>
+            </div>
+            <div id="pendencias" class="hidden"></div>
+
+            <h3 style="color:#4dd0e1; margin-bottom: 10px;">Produção de Hoje</h3>
+            <div class="cards">
+                <div class="card"><strong id="dash-os-hoje">0</strong>OS Lançadas</div>
+                <div class="card"><strong id="dash-aparelhos-hoje">0</strong>Aparelhos Usados</div>
+            </div>
+
+            <h3 style="color:#4dd0e1; margin-bottom: 10px;">Status do Estoque</h3>
+            <div id="dash-alerta-drop" class="dash-alert ok"><span>Cabo Drop</span> <strong id="dash-qtd-drop">0m</strong></div>
+            <div id="dash-alerta-conector" class="dash-alert ok"><span>Conectores</span> <strong id="dash-qtd-conector">0</strong></div>
+            <div id="dash-alerta-modem" class="dash-alert ok"><span>Aparelhos</span> <strong id="dash-qtd-modem">0</strong></div>
+
+            <div style="margin-top: 25px;">
+                <button class="btn-grande" onclick="mostrarAba('os')">➕ Registrar Nova OS</button>
+            </div>
+        </div>
+
+        <!-- ABA: REGISTRAR OS -->
+        <div id="pane-os" class="hidden">
+            <label>Provedor</label>
+            <select id="empresa" onchange="atualizarFormulario()">
+                <option value="">Selecione...</option>
+                <option value="Brasil Tec Par">Brasil Tec Par</option>
+                <option value="Cuiabá Fibra">Cuiabá Fibra</option>
+                <option value="Vtal">Vtal</option>
+            </select>
+
+            <label>Tipo de Serviço</label>
+            <select id="servico">
+                <option value="">Selecione o provedor primeiro</option>
+            </select>
+
+            <label>Protocolo</label>
+            <input type="text" id="protocolo" placeholder="Número do protocolo">
+
+            <label>Nome Completo do Cliente</label>
+            <input type="text" id="cliente" placeholder="Nome e Sobrenome">
+
+            <label>Observação</label>
+            <input type="text" id="observacao" placeholder="Ex: instaladas 2 câmeras internas">
+
+            <div id="materiais-section" class="materiais-box hidden">
+                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">Materiais Gastos / Recolhidos</h3>
+                <input type="number" id="drop" placeholder="Metros de Cabo Drop">
+                <input type="number" id="conectores" placeholder="Quantidade de Conectores SC/APC">
+
+                <label>Movimentou aparelho no estoque?</label>
+                <select id="usou_modem" onchange="toggleModem()">
+                    <option value="nao">Não</option>
+                    <option value="sim">Sim</option>
+                </select>
+
+                <div id="modem-box" class="hidden">
+                    <label>Buscar aparelho (digite últimos números)</label>
+                    <div class="busca">
+                        <input type="text" id="modem_busca" autocomplete="off" oninput="filtrarModems()">
+                        <button type="button" onclick="filtrarModems()">🔍</button>
+                    </div>
+                    <select id="modem_select"></select>
+                </div>
+            </div>
+
+            <button id="btn-salvar" onclick="salvarOS()">Finalizar OS</button>
+        </div>
+
+        <!-- ABA: MEUS SERVIÇOS -->
+        <div id="pane-servicos" class="hidden">
+            <p style="font-size:13px; color:#b0bec5; margin-top:0;">Histórico geral para sua conferência. A aprovação é feita periodicamente pela central.</p>
+            <div class="cards">
+                <div class="card"><strong id="os-pendentes">0</strong>Pendentes</div>
+                <div class="card"><strong id="os-reprovadas" style="color:#ff8a80">0</strong>Reprovadas</div>
+            </div>
+            <button class="secundario" onclick="carregarMinhasOS()">Atualizar lista</button>
+            <div id="lista-os"></div>
+            <div id="os-detalhe" class="materiais-box hidden"></div>
+        </div>
+
+        <!-- ABA: ESTOQUE -->
+        <div id="pane-estoque" class="hidden">
+            <div class="cards">
+                <div class="card"><strong id="est-drop">0</strong>metros drop</div>
+                <div class="card"><strong id="est-conector">0</strong>conectores</div>
+            </div>
+            <label>Aparelhos no carro (<span id="est-modems-qtd">0</span>)</label>
+            <ul id="lista-modems" class="lista-modems"></ul>
+            <p id="estoque-msg" class="msg-erro hidden"></p>
+            <button class="secundario" onclick="carregarEstoque()">Atualizar estoque</button>
+        </div>
+
+        <!-- ABA: ADMIN -->
+        <div id="pane-admin" class="hidden">
+            <label>Técnico a Receber Material</label>
+            <select id="adm_tecnico"></select>
+
+            <div class="materiais-box">
+                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">1. Transferir Insumos (Drop/Conector)</h3>
+                <input type="number" id="adm_qtd_drop" placeholder="Metros de Drop">
+                <input type="number" id="adm_qtd_conector" placeholder="Qtd. Conectores">
+                <button id="btn-enviar-insumo" onclick="admEnviarMaterial()">Enviar para Carga</button>
+            </div>
+
+            <div class="materiais-box">
+                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">2. Transferir Aparelhos (Em Lote)</h3>
+                <input type="text" id="adm_modelo" placeholder="Modelo (Ex: Huawei)">
+                <div class="busca">
+                    <input type="text" id="adm_serial" placeholder="Bipe aqui e aperte Enter" autocomplete="off">
+                    <button type="button" onclick="admAdicionarSerial()">+</button>
+                </div>
+                <ul id="adm_pendentes" class="lista-modems"></ul>
+                <button id="adm_btn_modems" onclick="admEnviarModems()">Enviar Aparelhos</button>
+            </div>
+        </div>
+
+        <button id="btn-instalar" class="hidden" onclick="instalarApp()" style="margin-top:20px">📲 Instalar app no celular</button>
+        <button class="secundario" onclick="toggleBoxSenha()" style="margin-top:20px">🔑 Alterar minha senha</button>
+        <div id="box-senha" class="materiais-box hidden">
+            <label>Nova senha (mínimo 6 caracteres)</label>
+            <input type="password" id="nova_senha" autocomplete="new-password">
+            <label>Repita a nova senha</label>
+            <input type="password" id="nova_senha2" autocomplete="new-password">
+            <button id="btn-senha" onclick="alterarSenha()">Salvar nova senha</button>
+            <button class="secundario" onclick="toggleBoxSenha()" style="margin-bottom:0">Cancelar</button>
+        </div>
+
+        <button class="secundario" onclick="sair()">Sair do Sistema</button>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://idniwemlettgmpsytdsn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbml3ZW1sZXR0Z21wc3l0ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNTgxNDEsImV4cCI6MjEwNzczNDE0MX0.EjDyy8A43zDTPKeo4Jd2f5Su6h9DqxpJXC8onKEwmV0';
+        const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // COLOQUE AQUI A URL DO SEU APPS SCRIPT (Web App)
+        const GOOGLE_SYNC_URL = 'https://script.google.com/macros/s/AKfycbwsjjVePiJWf8R6N9vVCELytqx8wUkCXWXnRloNZ6q6mS9kb3VHNvpU010D5JfB89xO/exec';
+
+        // Envia para a planilha sem nunca travar o app
+        function syncPlanilha(payload) {
+            if (!GOOGLE_SYNC_URL || GOOGLE_SYNC_URL.startsWith('COLE_AQUI')) return;
+            try {
+                fetch(GOOGLE_SYNC_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).catch(() => {});
+            } catch (e) {}
+        }
+
+        const servicosBrasilTecPar = ["Instalação Comum", "Instalação > 300M", "Ponto extra / Mudança de ponto interno", "Ativação de serviço agregado Câmeras", "Recolha de Equipamento"];
+        const servicosCuiabaFibra = ["Instalação Comum", "Instalação > 249M", "Manutenção Comum", "Ponto extra / Rede Mesh", "Recolha de Equipamento"];
+        const servicosVtal = ["Configuração futura"];
+
+        let usuarioId = null;
+        let usuarioEmail = "";
+        let usuarioNome = "";
+        let meusModems = [];
+        let ordensCarregadas = [];
+
+        // ---------- Inicialização ----------
+        async function iniciarApp(user) {
+            usuarioId = user.id;
+            usuarioEmail = user.email;
+
+            verificarAdmin(user);
+
+            try {
+                const { data } = await sb.from('profiles').select('nome').eq('id', usuarioId).maybeSingle();
+                usuarioNome = (data && data.nome) ? data.nome : (nomeEmCache() || usuarioEmail.split('@')[0]);
+            } catch(e) {
+                usuarioNome = nomeEmCache() || usuarioEmail.split('@')[0];
+            }
+            gravarJSON('tf_user', { id: usuarioId, email: usuarioEmail, nome: usuarioNome });
+
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+
+            atualizarRelogioDashboard();
+            mostrarAba('inicio');
+            atualizarPendencias();
+            atualizarStatusSync();
+            processarFila().then(enviou => { if (enviou) { carregarEstoque(); carregarDashboard(); } });
+        }
+
+        async function fazerLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('senha').value;
+            const btn = document.getElementById('btn-login');
+            if (!email || !password) return alert("Informe e-mail e senha.");
+
+            btn.disabled = true;
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            btn.disabled = false;
+
+            if (error) alert("Erro ao entrar: " + error.message);
+            else iniciarApp(data.user);
+        }
+
+        async function sair() {
+            if (lerFila().length && !confirm('Há OS aguardando envio. Elas ficam salvas neste celular e serão enviadas quando você entrar de novo com internet. Sair mesmo?')) return;
+            try { localStorage.removeItem('tf_user'); } catch(e) {}
+            try { await sb.auth.signOut(); } catch(e) {}
+            window.location.reload();
+        }
+
+        // ---------- Dashboard ----------
+        function atualizarRelogioDashboard() {
+            const agora = new Date();
+            const hora = agora.getHours();
+            let saudacao = 'Bom dia';
+            if (hora >= 12 && hora < 18) saudacao = 'Boa tarde';
+            else if (hora >= 18) saudacao = 'Boa noite';
+
+            document.getElementById('dash-saudacao').textContent = `${saudacao}, ${usuarioNome}!`;
+            document.getElementById('dash-data').textContent = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+
+        async function carregarDashboard() {
+            if (!usuarioId) return;
+            const hojeInicio = new Date();
+            hojeInicio.setHours(0,0,0,0);
+
+            const { data } = await sb.from('ordens').select('id, drop, conectores, modem_id').eq('tecnico_id', usuarioId).gte('created_at', hojeInicio.toISOString());
+            const ordensHoje = data || [];
+
+            document.getElementById('dash-os-hoje').textContent = ordensHoje.length;
+            document.getElementById('dash-aparelhos-hoje').textContent = ordensHoje.filter(o => o.modem_id).length;
+        }
+
+        // ---------- Abas ----------
+        function mostrarAba(nome) {
+            ['inicio', 'os', 'servicos', 'estoque', 'admin'].forEach(aba => {
+                document.getElementById('pane-' + aba).classList.toggle('hidden', nome !== aba);
+                document.getElementById('tab-' + aba).classList.toggle('ativa', nome === aba);
+            });
+            if (nome === 'estoque') carregarEstoque();
+            if (nome === 'servicos') carregarMinhasOS();
+            if (nome === 'inicio') { atualizarRelogioDashboard(); carregarDashboard(); carregarEstoque(); }
+        }
+
+        // ---------- Estoque ----------
+        async function carregarEstoque() {
+            if (!usuarioId) return;
+            let saldoBase = null, modemsBase = null;
+            if (navigator.onLine) {
+                try {
+                    const [saldoRes, modemsRes] = await Promise.all([
+                        sb.from('saldo').select('material,qtd').eq('tecnico_id', usuarioId),
+                        sb.from('modems').select('id,serie,modelo').eq('tecnico_id', usuarioId).eq('status', 'estoque').order('serie')
+                    ]);
+                    if (!saldoRes.error && !modemsRes.error) {
+                        saldoBase = { drop: 0, conector: 0 };
+                        (saldoRes.data || []).forEach(r => { saldoBase[r.material] = Number(r.qtd) || 0; });
+                        modemsBase = modemsRes.data || [];
+                        gravarJSON('tf_cache_' + usuarioId, { saldo: saldoBase, modems: modemsBase });
+                    }
+                } catch (e) {}
+            }
+            if (!saldoBase) {
+                const c = lerJSON('tf_cache_' + usuarioId, null);
+                if (c) { saldoBase = c.saldo; modemsBase = c.modems; }
+            }
+            saldoBase = saldoBase || { drop: 0, conector: 0 };
+            modemsBase = modemsBase || [];
+
+            // Desconta o que está na fila (OS feitas sem internet, ainda não enviadas)
+            const saldo = { drop: saldoBase.drop, conector: saldoBase.conector };
+            const usados = new Set();
+            lerFila().forEach(i => { saldo.drop -= (i.drop || 0); saldo.conector -= (i.conectores || 0); if (i.modemId) usados.add(i.modemId); });
+            meusModems = modemsBase.filter(m => !usados.has(m.id));
+
+            document.getElementById('est-drop').textContent = saldo.drop;
+            document.getElementById('est-conector').textContent = saldo.conector;
+            document.getElementById('est-modems-qtd').textContent = meusModems.length;
+            document.getElementById('drop').placeholder = `Metros (saldo: ${saldo.drop})`;
+            document.getElementById('conectores').placeholder = `Qtd (saldo: ${saldo.conector})`;
+
+            const ul = document.getElementById('lista-modems');
+            ul.innerHTML = meusModems.length === 0 ? '<li class="vazio">Nenhum aparelho.</li>' : '';
+            meusModems.forEach(m => {
+                ul.innerHTML += `<li>${escaparHtml(m.serie)} <span>${escaparHtml(m.modelo || '')}</span></li>`;
+            });
+
+            document.getElementById('dash-qtd-drop').textContent = `${saldo.drop}m`;
+            const boxDrop = document.getElementById('dash-alerta-drop');
+            if (saldo.drop < 100) { boxDrop.className = 'dash-alert critico'; boxDrop.innerHTML = `<span>Cabo Drop (Baixo)</span> <strong>${saldo.drop}m</strong>`; }
+            else { boxDrop.className = 'dash-alert ok'; boxDrop.innerHTML = `<span>Cabo Drop</span> <strong>${saldo.drop}m</strong>`; }
+
+            const boxConector = document.getElementById('dash-alerta-conector');
+            if (saldo.conector < 20) { boxConector.className = 'dash-alert critico'; boxConector.innerHTML = `<span>Conectores (Baixo)</span> <strong>${saldo.conector}</strong>`; }
+            else { boxConector.className = 'dash-alert ok'; boxConector.innerHTML = `<span>Conectores</span> <strong>${saldo.conector}</strong>`; }
+
+            const boxModem = document.getElementById('dash-alerta-modem');
+            if (meusModems.length === 0) {
+                boxModem.className = 'dash-alert critico';
+                boxModem.innerHTML = `<span>Aparelhos (Esgotado)</span> <strong>0</strong>`;
+            } else if (meusModems.length <= 2) {
+                boxModem.className = 'dash-alert critico';
+                boxModem.innerHTML = `<span>Aparelhos (Baixo)</span> <strong>${meusModems.length}</strong>`;
+            } else {
+                boxModem.className = 'dash-alert ok';
+                boxModem.innerHTML = `<span>Aparelhos</span> <strong>${meusModems.length}</strong>`;
+            }
+
+            filtrarModems();
+        }
+
+        // ---------- Formulário de OS ----------
+        function atualizarFormulario() {
+            const empresa = document.getElementById('empresa').value;
+            const servicoSelect = document.getElementById('servico');
+            const materiaisSection = document.getElementById('materiais-section');
+            const protoInput = document.getElementById('protocolo');
+
+            servicoSelect.innerHTML = '<option value="">Selecione o serviço...</option>';
+            let opcoes = [];
+
+            if (empresa === "Brasil Tec Par") {
+                opcoes = servicosBrasilTecPar;
+                materiaisSection.classList.remove('hidden');
+                protoInput.placeholder = "Protocolo (8 dígitos)";
+            } else if (empresa === "Cuiabá Fibra") {
+                opcoes = servicosCuiabaFibra;
+                materiaisSection.classList.add('hidden');
+                protoInput.placeholder = "Protocolo (5 dígitos)";
+            } else if (empresa === "Vtal") {
+                opcoes = servicosVtal;
+                materiaisSection.classList.add('hidden');
+                protoInput.placeholder = "Número do protocolo";
+            } else {
+                materiaisSection.classList.add('hidden');
+                protoInput.placeholder = "Número do protocolo";
+            }
+
+            opcoes.forEach(serv => { servicoSelect.innerHTML += `<option value="${serv}">${serv}</option>`; });
+        }
+
+        function toggleModem() {
+            const usou = document.getElementById('usou_modem').value === 'sim';
+            document.getElementById('modem-box').classList.toggle('hidden', !usou);
+            if (usou) document.getElementById('modem_busca').focus();
+        }
+
+        function filtrarModems() {
+            const termo = document.getElementById('modem_busca').value.trim().toUpperCase();
+            const sel = document.getElementById('modem_select');
+            const lista = meusModems.filter(m => m.serie.toUpperCase().includes(termo));
+
+            const atual = sel.value;
+            sel.innerHTML = `<option value="">Selecione (${lista.length})</option>`;
+            lista.forEach(m => { sel.innerHTML += `<option value="${m.id}" data-serie="${escaparHtml(m.serie)}" data-modelo="${escaparHtml(m.modelo || '')}">${escaparHtml(m.serie)}</option>`; });
+            if (atual && lista.some(m => String(m.id) === atual)) sel.value = atual;
+            if (termo.length >= 4 && lista.length === 1) sel.value = lista[0].id;
+        }
+
+        async function salvarOS() {
+            const empresa = document.getElementById('empresa').value;
+            const servico = document.getElementById('servico').value;
+            const protocolo = document.getElementById('protocolo').value.trim();
+            const cliente = document.getElementById('cliente').value;
+            const obs = document.getElementById('observacao').value;
+
+            if (!empresa || !servico || !cliente) return alert("Preencha Provedor, Serviço e Cliente.");
+
+            if (empresa === "Brasil Tec Par" && !/^\d{8}$/.test(protocolo)) {
+                return alert("O protocolo da Brasil Tec Par deve ter exatamente 8 dígitos.");
+            }
+            if (empresa === "Cuiabá Fibra" && !/^\d{5}$/.test(protocolo)) {
+                return alert("O protocolo da Cuiabá Fibra deve ter exatamente 5 dígitos.");
+            }
+
+            let drop = 0, conectores = 0, modemId = null, modemSerie = null, modemModelo = null;
+
+            if (!document.getElementById('materiais-section').classList.contains('hidden')) {
+                drop = parseInt(document.getElementById('drop').value) || 0;
+                conectores = parseInt(document.getElementById('conectores').value) || 0;
+                if (document.getElementById('usou_modem').value === 'sim') {
+                    const selModem = document.getElementById('modem_select');
+                    modemId = parseInt(selModem.value);
+                    if (!modemId) return alert("Selecione o aparelho na lista.");
+                    modemSerie = selModem.options[selModem.selectedIndex].getAttribute('data-serie');
+                    modemModelo = selModem.options[selModem.selectedIndex].getAttribute('data-modelo');
+                }
+            }
+
+            const item = {
+                uid: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                empresa, servico, protocolo, cliente, obs, drop, conectores,
+                modemId, modemSerie, modemModelo, criadoEm: new Date().toISOString()
+            };
+
+            document.getElementById('btn-salvar').disabled = true;
+
+            try {
+                if (!navigator.onLine) { enfileirarOS(item); return; }
+
+                const { data, error } = await enviarOS(item, false);
+                if (error) {
+                    if (erroDeRede(error)) { enfileirarOS(item); return; }
+                    throw error;
+                }
+
+                syncPlanilha(payloadPlanilha(item, data));
+                alert("OS Lançada com sucesso!");
+                limparFormOS();
+                mostrarAba('inicio');
+
+            } catch (err) {
+                if (erroDeRede(err)) enfileirarOS(item);
+                else alert("Erro ao salvar: " + err.message);
+            }
+            finally { document.getElementById('btn-salvar').disabled = false; }
+        }
+
+        // ---------- Offline: fila, cache e sincronização ----------
+        let enviandoFila = false;
+        let ultimaSync = null;
+
+        function lerJSON(chave, padrao) { try { const v = localStorage.getItem(chave); return v ? JSON.parse(v) : padrao; } catch (e) { return padrao; } }
+        function gravarJSON(chave, valor) { try { localStorage.setItem(chave, JSON.stringify(valor)); } catch (e) {} }
+        function lerFila() { return lerJSON('tf_fila_' + usuarioId, []); }
+        function lerErros() { return lerJSON('tf_erros_' + usuarioId, []); }
+        function removerDaFila(uid) { gravarJSON('tf_fila_' + usuarioId, lerFila().filter(i => i.uid !== uid)); }
+        function guardarErro(item) { const e = lerErros(); e.push(item); gravarJSON('tf_erros_' + usuarioId, e); }
+        function limparErros() { gravarJSON('tf_erros_' + usuarioId, []); atualizarPendencias(); }
+        function nomeEmCache() { const u = lerJSON('tf_user', null); return (u && u.id === usuarioId && u.nome) ? u.nome : ''; }
+
+        function erroDeRede(e) {
+            if (!navigator.onLine) return true;
+            return /failed to fetch|networkerror|network request failed|load failed|fetch/i.test(String((e && e.message) || e || ''));
+        }
+
+        async function enviarOS(item, veioDaFila) {
+            let obs = item.obs || '';
+            if (veioDaFila) {
+                const quando = new Date(item.criadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                obs = (obs ? obs + ' ' : '') + `[feita offline em ${quando}]`;
+            }
+            try {
+                return await sb.rpc('registrar_ordem', {
+                    p_empresa: item.empresa, p_servico: item.servico, p_protocolo: item.protocolo,
+                    p_cliente: item.cliente, p_obs: obs, p_drop: item.drop, p_conectores: item.conectores, p_modem: item.modemId
+                });
+            } catch (e) { return { data: null, error: e }; }
+        }
+
+        function payloadPlanilha(item, osId) {
+            return {
+                action: 'nova_os', os_id: osId, tecnico: usuarioNome,
+                empresa: item.empresa, servico: item.servico, protocolo: item.protocolo, cliente: item.cliente,
+                drop: item.drop, conectores: item.conectores, modem_serial: item.modemSerie, modem_modelo: item.modemModelo
+            };
+        }
+
+        function limparFormOS() {
+            ['protocolo','cliente','observacao','drop','conectores'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('usou_modem').value = 'nao'; toggleModem();
+        }
+
+        function enfileirarOS(item) {
+            const fila = lerFila();
+            fila.push(item);
+            gravarJSON('tf_fila_' + usuarioId, fila);
+            alert("Sem conexão com a internet.\nA OS foi salva no celular e será enviada automaticamente quando a internet voltar.");
+            limparFormOS();
+            mostrarAba('inicio');
+            atualizarPendencias();
+        }
+
+        async function processarFila() {
+            if (enviandoFila || !navigator.onLine || !usuarioId) return false;
+            if (!lerFila().length) return false;
+            enviandoFila = true;
+            let mudou = false;
+            try {
+                for (const item of lerFila()) {
+                    // Já foi enviada antes (resposta perdida)? Então só tira da fila.
+                    const r = await sb.from('ordens').select('id').eq('tecnico_id', usuarioId)
+                        .eq('empresa', item.empresa).eq('protocolo', item.protocolo)
+                        .eq('servico', item.servico).eq('cliente', item.cliente).limit(1);
+                    if (r.error && erroDeRede(r.error)) break;
+                    if (r.data && r.data.length) { removerDaFila(item.uid); mudou = true; continue; }
+
+                    const { data, error } = await enviarOS(item, true);
+                    if (error) {
+                        if (erroDeRede(error)) break;
+                        removerDaFila(item.uid);
+                        guardarErro({ protocolo: item.protocolo, erro: error.message || 'erro desconhecido' });
+                        mudou = true;
+                        continue;
+                    }
+                    removerDaFila(item.uid);
+                    syncPlanilha(payloadPlanilha(item, data));
+                    mudou = true;
+                }
+            } finally {
+                enviandoFila = false;
+                atualizarPendencias();
+            }
+            return mudou;
+        }
+
+        function atualizarPendencias() {
+            const box = document.getElementById('pendencias');
+            if (!box) return;
+            const fila = lerFila(), erros = lerErros();
+            let html = '';
+            if (fila.length) html += `<div class="dash-alert critico"><span>⏳ ${fila.length} OS aguardando internet para enviar</span></div>`;
+            erros.forEach(e => { html += `<div class="dash-alert critico" style="display:block"><b>⚠ Protocolo ${escaparHtml(e.protocolo)} não foi aceito:</b> ${escaparHtml(e.erro)}</div>`; });
+            if (erros.length) html += `<button class="secundario" onclick="limparErros()">Entendi, dispensar avisos</button>`;
+            box.innerHTML = html;
+            box.classList.toggle('hidden', !html);
+        }
+
+        function atualizarStatusSync() {
+            const el = document.getElementById('sync-status');
+            if (!el) return;
+            if (!navigator.onLine) { el.textContent = '📵 Sem internet — usando dados salvos'; return; }
+            el.textContent = ultimaSync
+                ? 'Atualizado às ' + ultimaSync.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                : 'Atualizando...';
+        }
+
+        async function sincronizarTudo(manual) {
+            if (!usuarioId) return;
+            const btn = document.getElementById('btn-sync');
+            if (manual && btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+            try {
+                await processarFila();
+                await Promise.all([carregarEstoque(), carregarDashboard()]);
+                if (!document.getElementById('pane-servicos').classList.contains('hidden')) await carregarMinhasOS();
+                if (navigator.onLine) ultimaSync = new Date();
+            } catch (e) {}
+            finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Sincronizar'; }
+                atualizarStatusSync();
+                atualizarPendencias();
+            }
+        }
+
+        window.addEventListener('online', () => sincronizarTudo(false));
+        window.addEventListener('offline', atualizarStatusSync);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizarTudo(false); });
+        setInterval(() => { if (!document.hidden && usuarioId) sincronizarTudo(false); }, 30000);
+
+        // ---------- Meus Serviços ----------
+        function formatarData(data) {
+            if (!data) return '-';
+            const d = new Date(data);
+            return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escaparHtml(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+        }
+
+        function classeStatus(status) {
+            const s = String(status).toLowerCase();
+            if (s.includes('reprov')) return 'status-reprovado';
+            if (s.includes('aprov')) return 'status-aprovado';
+            return 'status-pendente';
+        }
+
+        async function carregarMinhasOS() {
+            if (!usuarioId) return;
+            const lista = document.getElementById('lista-os');
+            const { data } = await sb.from('ordens').select('*').eq('tecnico_id', usuarioId).order('created_at', { ascending: false });
+
+            const ordens = data || [];
+            ordensCarregadas = ordens;
+            document.getElementById('os-pendentes').textContent = ordens.filter(o => String(o.status).toLowerCase()==='pendente').length;
+            document.getElementById('os-reprovadas').textContent = ordens.filter(o => String(o.status).toLowerCase()==='reprovado').length;
+
+            const pend = lerFila();
+            lista.innerHTML = (ordens.length || pend.length) ? '' : '<p class="vazio">Nenhum serviço lançado.</p>';
+            pend.slice().reverse().forEach(p => {
+                lista.innerHTML += `
+                    <div class="os-item" style="cursor:default">
+                        <div class="os-topo"><div class="os-titulo">Protocolo ${escaparHtml(p.protocolo)}</div><span class="status status-pendente">Aguardando envio</span></div>
+                        <div class="os-meta">${escaparHtml(p.empresa)} - ${escaparHtml(p.cliente)}<br>Feita em: ${formatarData(p.criadoEm)}</div>
+                    </div>`;
+            });
+            ordens.forEach((o, i) => {
+                let motivoHtml = '';
+                if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
+                    motivoHtml = `<div style="color:#ff8a80; font-size:13px; margin-top:6px;"><b>Motivo:</b> ${escaparHtml((o.motivo_reprovacao || o.motivo))}</div>`;
+                }
+
+                lista.innerHTML += `
+                    <div class="os-item" onclick="abrirDetalheOS(${i})">
+                        <div class="os-topo"><div class="os-titulo">OS #${o.id}</div><span class="status ${classeStatus(o.status)}">${escaparHtml(o.status)}</span></div>
+                        <div class="os-meta">${escaparHtml(o.empresa)} - ${escaparHtml(o.cliente)}<br>Lançada em: ${formatarData(o.created_at)}${motivoHtml}</div>
+                    </div>`;
+            });
+        }
+
+        window.abrirDetalheOS = function(i) {
+            const o = ordensCarregadas[i];
+            if (!o) return;
+            const box = document.getElementById('os-detalhe');
+            box.classList.remove('hidden');
+
+            let motivoDetalhe = '';
+            if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
+                motivoDetalhe = `<div class="os-campo" style="grid-column: 1 / -1;"><small style="color:#ff8a80">Motivo da Reprovação</small><span style="color:#ff8a80">${escaparHtml((o.motivo_reprovacao || o.motivo))}</span></div>`;
+            }
+
+            box.innerHTML = `
+                <div class="os-topo">
+                    <h3 style="margin:0;color:#4dd0e1">OS #${o.id}</h3>
+                    <span class="status ${classeStatus(o.status)}">${escaparHtml(o.status)}</span>
+                </div>
+                <div class="os-detalhe-grid">
+                    <div class="os-campo"><small>Empresa</small><span>${escaparHtml(o.empresa)}</span></div>
+                    <div class="os-campo"><small>Serviço</small><span>${escaparHtml(o.servico)}</span></div>
+                    <div class="os-campo"><small>Protocolo</small><span>${escaparHtml(o.protocolo)}</span></div>
+                    <div class="os-campo"><small>Data / Hora</small><span>${formatarData(o.created_at)}</span></div>
+                    <div class="os-campo"><small>Cliente</small><span>${escaparHtml(o.cliente)}</span></div>
+                    <div class="os-campo"><small>Status</small><span>${escaparHtml(o.status)}</span></div>
+                    ${motivoDetalhe}
+                </div>
+                <div style="margin-top:8px" class="os-campo">
+                    <small>Observação</small>
+                    <span>${escaparHtml(o.obs || 'Nenhuma')}</span>
+                </div>
+                <button class="secundario" onclick="window.print()">Imprimir / PDF</button>
+                <button class="secundario" onclick="document.getElementById('os-detalhe').classList.add('hidden')">Fechar</button>
+            `;
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ---------- Alterar senha ----------
+        function toggleBoxSenha() {
+            const box = document.getElementById('box-senha');
+            box.classList.toggle('hidden');
+            document.getElementById('nova_senha').value = '';
+            document.getElementById('nova_senha2').value = '';
+            if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function alterarSenha() {
+            const s1 = document.getElementById('nova_senha').value;
+            const s2 = document.getElementById('nova_senha2').value;
+            if (!navigator.onLine) return alert("Sem internet. Conecte-se para alterar a senha.");
+            if (s1.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
+            if (s1 !== s2) return alert("As senhas não são iguais.");
+
+            const btn = document.getElementById('btn-senha');
+            btn.disabled = true;
+            try {
+                const { error } = await sb.auth.updateUser({ password: s1 });
+                if (error) throw error;
+                alert("Senha alterada com sucesso! Use a nova senha no próximo login.");
+                toggleBoxSenha();
+            } catch (err) {
+                alert("Não foi possível alterar a senha: " + (err.message || err));
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ---------- Admin (somente Pedro e Izaque) ----------
+        function verificarAdmin(user) {
+            const emailUser = user.email.toLowerCase().trim();
+            const adminsAutorizados = ['pedrohenriquecatharino@gmail.com', 'izaque@tecfibras.com'];
+
+            if (adminsAutorizados.includes(emailUser)) {
+                document.getElementById('tab-admin').classList.remove('hidden');
+                carregarTecnicosAdmin();
+            }
+        }
+
+        async function carregarTecnicosAdmin() {
+            const sel = document.getElementById('adm_tecnico');
+            const { data } = await sb.from('profiles').select('id, nome, email').order('nome');
+            sel.innerHTML = '<option value="">Selecione o técnico...</option>';
+            if (data) data.forEach(t => {
+                const nome = t.nome || t.email;
+                sel.innerHTML += `<option value="${t.id}" data-nome="${escaparHtml(nome)}">${escaparHtml(nome)}</option>`;
+            });
+        }
+
+        async function admEnviarMaterial() {
+            const tecSel = document.getElementById('adm_tecnico');
+            const tecId = tecSel.value;
+            if (!tecId) return alert("Selecione o técnico");
+            const tecNome = tecSel.options[tecSel.selectedIndex].getAttribute('data-nome');
+
+            const drop = parseInt(document.getElementById('adm_qtd_drop').value) || 0;
+            const conector = parseInt(document.getElementById('adm_qtd_conector').value) || 0;
+
+            if (drop === 0 && conector === 0) return alert("Digite quantidades de drop ou conector.");
+
+            document.getElementById('btn-enviar-insumo').disabled = true;
+            const inserts = [];
+            if (drop !== 0) inserts.push({ tecnico_id: tecId, material: 'drop', qtd: drop });
+            if (conector !== 0) inserts.push({ tecnico_id: tecId, material: 'conector', qtd: conector });
+
+            const { error } = await sb.from('movimentos').insert(inserts);
+            document.getElementById('btn-enviar-insumo').disabled = false;
+
+            if (!error) {
+                syncPlanilha({ action: 'movimento_admin', admin: usuarioNome, tecnico: tecNome, drop: drop, conectores: conector, modems: [] });
+                alert("Insumos enviados ao carro!");
+                document.getElementById('adm_qtd_drop').value = ''; document.getElementById('adm_qtd_conector').value = '';
+            } else {
+                alert("Erro ao transferir insumos: " + error.message);
+            }
+        }
+
+        let modemsPendentesAdmin = [];
+        function admAdicionarSerial() {
+            const s = document.getElementById('adm_serial').value.trim();
+            if (s) {
+                modemsPendentesAdmin.push({ serie: s, modelo: document.getElementById('adm_modelo').value.trim() });
+                document.getElementById('adm_serial').value = '';
+                atualizarListaPendentesAdmin();
+            }
+        }
+
+        function atualizarListaPendentesAdmin() {
+            const ul = document.getElementById('adm_pendentes'); ul.innerHTML = '';
+            modemsPendentesAdmin.forEach((m, i) => {
+                ul.innerHTML += `<li><span>${escaparHtml(m.serie)} ${escaparHtml(m.modelo)}</span> <button onclick="modemsPendentesAdmin.splice(${i},1); atualizarListaPendentesAdmin()">X</button></li>`;
+            });
+        }
+
+        document.getElementById('adm_serial').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); admAdicionarSerial(); } });
+
+        async function admEnviarModems() {
+            const tecSel = document.getElementById('adm_tecnico');
+            if (!tecSel.value) return alert("Selecione o técnico.");
+            if (modemsPendentesAdmin.length === 0) return alert("Bipe ao menos um serial antes de enviar.");
+
+            const tecNome = tecSel.options[tecSel.selectedIndex].getAttribute('data-nome');
+
+            const inserts = modemsPendentesAdmin.map(m => ({ serie: m.serie, modelo: m.modelo, tecnico_id: tecSel.value, status: 'estoque' }));
+            document.getElementById('adm_btn_modems').disabled = true;
+            const { error } = await sb.from('modems').insert(inserts);
+            document.getElementById('adm_btn_modems').disabled = false;
+
+            if (!error) {
+                syncPlanilha({ action: 'movimento_admin', admin: usuarioNome, tecnico: tecNome, drop: 0, conectores: 0, modems: modemsPendentesAdmin });
+                alert("Aparelhos transferidos com sucesso!");
+                modemsPendentesAdmin = [];
+                atualizarListaPendentesAdmin();
+            } else {
+                alert("Erro ao transferir aparelhos: " + error.message);
+            }
+        }
+
+        // Reconecta a sessão automaticamente
+        // Botão "Instalar app" (aparece só quando o Chrome permite instalar)
+        let eventoInstalar = null;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            eventoInstalar = e;
+            document.getElementById('btn-instalar').classList.remove('hidden');
+        });
+        window.addEventListener('appinstalled', () => {
+            eventoInstalar = null;
+            document.getElementById('btn-instalar').classList.add('hidden');
+        });
+        async function instalarApp() {
+            if (!eventoInstalar) return;
+            eventoInstalar.prompt();
+            await eventoInstalar.userChoice;
+            eventoInstalar = null;
+            document.getElementById('btn-instalar').classList.add('hidden');
+        }
+
+        function usarUsuarioEmCache() {
+            if (navigator.onLine) return;
+            const u = lerJSON('tf_user', null);
+            if (u && u.id) iniciarApp({ id: u.id, email: u.email });
+        }
+        sb.auth.getSession().then(({ data }) => {
+            if (data?.session) iniciarApp(data.session.user);
+            else usarUsuarioEmCache();
+        }).catch(usarUsuarioEmCache);
+    </script>
+
+    <!-- SERVICE WORKER (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('PWA ativado!'))
+                    .catch(err => console.log('Erro no PWA', err));
+            });
+        }
+    </script>
+</body>
+</html>
