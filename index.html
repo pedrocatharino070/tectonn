@@ -185,9 +185,9 @@
             <input type="text" id="observacao" placeholder="Ex: instaladas 2 câmeras internas">
 
             <div id="materiais-section" class="materiais-box hidden">
-                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">Materiais Gastos</h3>
-                <input type="number" id="drop" placeholder="Drop (Metros)">
-                <input type="number" id="conectores" placeholder="Conector (Qtd)">
+                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">Materiais Gastos / Recolhidos</h3>
+                <input type="number" id="drop" placeholder="Metros de Cabo Drop">
+                <input type="number" id="conectores" placeholder="Quantidade de Conectores SC/APC">
 
                 <label>Movimentou aparelho no estoque?</label>
                 <select id="usou_modem" onchange="toggleModem()">
@@ -275,8 +275,10 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbml3ZW1sZXR0Z21wc3l0ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNTgxNDEsImV4cCI6MjEwNzczNDE0MX0.EjDyy8A43zDTPKeo4Jd2f5Su6h9DqxpJXC8onKEwmV0';
         const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        // COLOQUE AQUI A URL DO SEU APPS SCRIPT (Web App)
         const GOOGLE_SYNC_URL = 'https://script.google.com/macros/s/AKfycbwsjjVePiJWf8R6N9vVCELytqx8wUkCXWXnRloNZ6q6mS9kb3VHNvpU010D5JfB89xO/exec';
 
+        // Envia para a planilha sem nunca travar o app
         function syncPlanilha(payload) {
             if (!GOOGLE_SYNC_URL || GOOGLE_SYNC_URL.startsWith('COLE_AQUI')) return;
             try {
@@ -299,7 +301,7 @@
             usuarioId = user.id;
             usuarioEmail = user.email;
 
-            // verificarAdmin(user); // Removido ou descomente se você tiver a lógica de admin feita depois
+            verificarAdmin(user);
 
             try {
                 const { data } = await sb.from('profiles').select('nome').eq('id', usuarioId).maybeSingle();
@@ -357,24 +359,18 @@
             const hojeInicio = new Date();
             hojeInicio.setHours(0,0,0,0);
 
-            try {
-                const { data } = await sb.from('ordens').select('id, drop, conectores, modem_id').eq('tecnico_id', usuarioId).gte('created_at', hojeInicio.toISOString());
-                const ordensHoje = data || [];
+            const { data } = await sb.from('ordens').select('id, drop, conectores, modem_id').eq('tecnico_id', usuarioId).gte('created_at', hojeInicio.toISOString());
+            const ordensHoje = data || [];
 
-                document.getElementById('dash-os-hoje').textContent = ordensHoje.length;
-                document.getElementById('dash-aparelhos-hoje').textContent = ordensHoje.filter(o => o.modem_id).length;
-            } catch (e) {
-                console.error("Erro dashboard offline", e);
-            }
+            document.getElementById('dash-os-hoje').textContent = ordensHoje.length;
+            document.getElementById('dash-aparelhos-hoje').textContent = ordensHoje.filter(o => o.modem_id).length;
         }
 
         // ---------- Abas ----------
         function mostrarAba(nome) {
             ['inicio', 'os', 'servicos', 'estoque', 'admin'].forEach(aba => {
-                const pane = document.getElementById('pane-' + aba);
-                const tab = document.getElementById('tab-' + aba);
-                if (pane) pane.classList.toggle('hidden', nome !== aba);
-                if (tab) tab.classList.toggle('ativa', nome === aba);
+                document.getElementById('pane-' + aba).classList.toggle('hidden', nome !== aba);
+                document.getElementById('tab-' + aba).classList.toggle('ativa', nome === aba);
             });
             if (nome === 'estoque') carregarEstoque();
             if (nome === 'servicos') carregarMinhasOS();
@@ -415,10 +411,8 @@
             document.getElementById('est-drop').textContent = saldo.drop;
             document.getElementById('est-conector').textContent = saldo.conector;
             document.getElementById('est-modems-qtd').textContent = meusModems.length;
-            
-            // Textos alterados conforme solicitado
-            document.getElementById('drop').placeholder = `Drop em metros (saldo: ${saldo.drop})`;
-            document.getElementById('conectores').placeholder = `Conector qtd (saldo: ${saldo.conector})`;
+            document.getElementById('drop').placeholder = `Metros (saldo: ${saldo.drop})`;
+            document.getElementById('conectores').placeholder = `Qtd (saldo: ${saldo.conector})`;
 
             const ul = document.getElementById('lista-modems');
             ul.innerHTML = meusModems.length === 0 ? '<li class="vazio">Nenhum aparelho.</li>' : '';
@@ -557,36 +551,6 @@
             finally { document.getElementById('btn-salvar').disabled = false; }
         }
 
-        function limparFormOS() {
-            document.getElementById('empresa').value = '';
-            document.getElementById('servico').innerHTML = '<option value="">Selecione o provedor primeiro</option>';
-            document.getElementById('protocolo').value = '';
-            document.getElementById('cliente').value = '';
-            document.getElementById('observacao').value = '';
-            document.getElementById('drop').value = '';
-            document.getElementById('conectores').value = '';
-            document.getElementById('usou_modem').value = 'nao';
-            document.getElementById('modem_busca').value = '';
-            toggleModem();
-            carregarEstoque();
-        }
-
-        function payloadPlanilha(item, dbData) {
-            return {
-                id: dbData ? dbData.id : 'offline',
-                tecnico: usuarioNome,
-                empresa: item.empresa,
-                servico: item.servico,
-                protocolo: item.protocolo,
-                cliente: item.cliente,
-                observacao: item.obs,
-                drop: item.drop,
-                conectores: item.conectores,
-                modem_serie: item.modemSerie,
-                data_criacao: item.criadoEm
-            };
-        }
-
         // ---------- Offline: fila, cache e sincronização ----------
         let enviandoFila = false;
         let ultimaSync = null;
@@ -605,194 +569,365 @@
             return /failed to fetch|networkerror|network request failed|load failed|fetch/i.test(String((e && e.message) || e || ''));
         }
 
-        function enfileirarOS(item) {
-            const fila = lerFila();
-            fila.push(item);
-            gravarJSON('tf_fila_' + usuarioId, fila);
-            alert("Você está offline. A OS foi salva no celular e será enviada automaticamente quando a internet voltar.");
-            limparFormOS();
-            mostrarAba('inicio');
-            atualizarPendencias();
-        }
-
         async function enviarOS(item, veioDaFila) {
             let obs = item.obs || '';
             if (veioDaFila) {
                 const quando = new Date(item.criadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                 obs = (obs ? obs + ' ' : '') + `[feita offline em ${quando}]`;
             }
+            try {
+                return await sb.rpc('registrar_ordem', {
+                    p_empresa: item.empresa, p_servico: item.servico, p_protocolo: item.protocolo,
+                    p_cliente: item.cliente, p_obs: obs, p_drop: item.drop, p_conectores: item.conectores, p_modem: item.modemId
+                });
+            } catch (e) { return { data: null, error: e }; }
+        }
 
-            // Inserir a Ordem no Supabase
-            const { data, error } = await sb.from('ordens').insert([{
-                tecnico_id: usuarioId,
-                empresa: item.empresa,
-                servico: item.servico,
-                protocolo: item.protocolo,
-                cliente: item.cliente,
-                observacao: obs,
-                drop: item.drop || 0,
-                conectores: item.conectores || 0,
-                modem_id: item.modemId || null,
-                modem_serie: item.modemSerie || null
-            }]).select().single();
+        function payloadPlanilha(item, osId) {
+            return {
+                action: 'nova_os', os_id: osId, tecnico: usuarioNome,
+                empresa: item.empresa, servico: item.servico, protocolo: item.protocolo, cliente: item.cliente,
+                drop: item.drop, conectores: item.conectores, modem_serial: item.modemSerie, modem_modelo: item.modemModelo
+            };
+        }
 
-            if (error) return { error };
+        function limparFormOS() {
+            ['protocolo','cliente','observacao','drop','conectores'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('usou_modem').value = 'nao'; toggleModem();
+        }
 
-            // Atualizar status do Modem se houver
-            if (item.modemId) {
-                await sb.from('modems').update({ status: 'instalado' }).eq('id', item.modemId);
-            }
-
-            // Subtrair Saldo (Considerando que você tem uma tabela saldo e talvez precise gerenciar)
-            // Forma simplificada baseada no JS
-            if (item.drop > 0) {
-                try {
-                    const resDrop = await sb.from('saldo').select('qtd, id').eq('tecnico_id', usuarioId).eq('material', 'drop').single();
-                    if (resDrop.data) {
-                        await sb.from('saldo').update({ qtd: resDrop.data.qtd - item.drop }).eq('id', resDrop.data.id);
-                    }
-                } catch(e){}
-            }
-
-            if (item.conectores > 0) {
-                try {
-                    const resConector = await sb.from('saldo').select('qtd, id').eq('tecnico_id', usuarioId).eq('material', 'conector').single();
-                    if (resConector.data) {
-                        await sb.from('saldo').update({ qtd: resConector.data.qtd - item.conectores }).eq('id', resConector.data.id);
-                    }
-                } catch(e){}
-            }
-
-            return { data };
+        function enfileirarOS(item) {
+            const fila = lerFila();
+            fila.push(item);
+            gravarJSON('tf_fila_' + usuarioId, fila);
+            alert("Sem conexão com a internet.\nA OS foi salva no celular e será enviada automaticamente quando a internet voltar.");
+            limparFormOS();
+            mostrarAba('inicio');
+            atualizarPendencias();
         }
 
         async function processarFila() {
-            if (enviandoFila || !navigator.onLine) return false;
-            const fila = lerFila();
-            if (fila.length === 0) return false;
-
+            if (enviandoFila || !navigator.onLine || !usuarioId) return false;
+            if (!lerFila().length) return false;
             enviandoFila = true;
-            let enviouAlgo = false;
-            atualizarStatusSync("Enviando pendências...");
+            let mudou = false;
+            try {
+                for (const item of lerFila()) {
+                    // Já foi enviada antes (resposta perdida)? Então só tira da fila.
+                    const r = await sb.from('ordens').select('id').eq('tecnico_id', usuarioId)
+                        .eq('empresa', item.empresa).eq('protocolo', item.protocolo)
+                        .eq('servico', item.servico).eq('cliente', item.cliente).limit(1);
+                    if (r.error && erroDeRede(r.error)) break;
+                    if (r.data && r.data.length) { removerDaFila(item.uid); mudou = true; continue; }
 
-            for (const item of [...fila]) {
-                try {
                     const { data, error } = await enviarOS(item, true);
                     if (error) {
-                        if (!erroDeRede(error)) {
-                            item.erroMsg = error.message;
-                            guardarErro(item);
-                            removerDaFila(item.uid);
-                        } else {
-                            break; // Sem internet
-                        }
-                    } else {
-                        syncPlanilha(payloadPlanilha(item, data));
+                        if (erroDeRede(error)) break;
                         removerDaFila(item.uid);
-                        enviouAlgo = true;
+                        guardarErro({ protocolo: item.protocolo, erro: error.message || 'erro desconhecido' });
+                        mudou = true;
+                        continue;
                     }
-                } catch (err) {
-                    if (erroDeRede(err)) break;
+                    removerDaFila(item.uid);
+                    syncPlanilha(payloadPlanilha(item, data));
+                    mudou = true;
                 }
+            } finally {
+                enviandoFila = false;
+                atualizarPendencias();
             }
-            enviandoFila = false;
-            atualizarPendencias();
-            atualizarStatusSync();
-            return enviouAlgo;
+            return mudou;
         }
 
         function atualizarPendencias() {
-            const fila = lerFila();
-            const erros = lerErros();
-            const div = document.getElementById('pendencias');
-            
-            if (fila.length === 0 && erros.length === 0) {
-                div.classList.add('hidden');
-                return;
-            }
-
-            div.classList.remove('hidden');
+            const box = document.getElementById('pendencias');
+            if (!box) return;
+            const fila = lerFila(), erros = lerErros();
             let html = '';
-            if (fila.length > 0) {
-                html += `<div class="dash-alert critico" style="display:block;">
-                    <strong>${fila.length} OS aguardando internet</strong> para envio. Fique tranquilo, está salvo no celular.
-                </div>`;
-            }
-            if (erros.length > 0) {
-                html += `<div class="dash-alert critico" style="display:block; border-color: red;">
-                    <strong>${erros.length} OS deram erro</strong> e não puderam ser salvas no sistema central.<br>
-                    <button class="secundario" onclick="limparErros()">Ocultar aviso</button>
-                </div>`;
-            }
-            div.innerHTML = html;
+            if (fila.length) html += `<div class="dash-alert critico"><span>⏳ ${fila.length} OS aguardando internet para enviar</span></div>`;
+            erros.forEach(e => { html += `<div class="dash-alert critico" style="display:block"><b>⚠ Protocolo ${escaparHtml(e.protocolo)} não foi aceito:</b> ${escaparHtml(e.erro)}</div>`; });
+            if (erros.length) html += `<button class="secundario" onclick="limparErros()">Entendi, dispensar avisos</button>`;
+            box.innerHTML = html;
+            box.classList.toggle('hidden', !html);
         }
 
-        function atualizarStatusSync(textoMsg) {
-            const span = document.getElementById('sync-status');
-            if (textoMsg) {
-                span.textContent = textoMsg;
-                span.style.color = '#ffe082';
-                return;
-            }
-            
-            if (!navigator.onLine) {
-                span.textContent = "Offline - Usando dados salvos";
-                span.style.color = '#ff8a80';
-            } else {
-                const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                span.textContent = `Online (Atualizado ${hora})`;
-                span.style.color = '#80cbc4';
-            }
+        function atualizarStatusSync() {
+            const el = document.getElementById('sync-status');
+            if (!el) return;
+            if (!navigator.onLine) { el.textContent = '📵 Sem internet — usando dados salvos'; return; }
+            el.textContent = ultimaSync
+                ? 'Atualizado às ' + ultimaSync.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                : 'Atualizando...';
         }
 
-        async function sincronizarTudo(forcar = false) {
+        async function sincronizarTudo(manual) {
+            if (!usuarioId) return;
             const btn = document.getElementById('btn-sync');
-            btn.disabled = true;
-            btn.textContent = "Sincronizando...";
-            
-            const enviou = await processarFila();
-            await carregarEstoque();
-            await carregarDashboard();
-            
-            btn.disabled = false;
-            btn.textContent = "🔄 Sincronizar";
-            atualizarStatusSync();
-            if (forcar && enviou) alert("Sincronização concluída com sucesso!");
+            if (manual && btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+            try {
+                await processarFila();
+                await Promise.all([carregarEstoque(), carregarDashboard()]);
+                if (!document.getElementById('pane-servicos').classList.contains('hidden')) await carregarMinhasOS();
+                if (navigator.onLine) ultimaSync = new Date();
+            } catch (e) {}
+            finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Sincronizar'; }
+                atualizarStatusSync();
+                atualizarPendencias();
+            }
         }
 
-        // Listener para voltar internet
-        window.addEventListener('online', () => { sincronizarTudo(); });
-        window.addEventListener('offline', () => { atualizarStatusSync(); });
+        window.addEventListener('online', () => sincronizarTudo(false));
+        window.addEventListener('offline', atualizarStatusSync);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizarTudo(false); });
+        setInterval(() => { if (!document.hidden && usuarioId) sincronizarTudo(false); }, 30000);
 
-        function escaparHtml(texto) {
-            if (!texto) return '';
-            return texto.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        // ---------- Meus Serviços ----------
+        function formatarData(data) {
+            if (!data) return '-';
+            const d = new Date(data);
+            return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
-        // --- Utils para Senha ---
+        function escaparHtml(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+        }
+
+        function classeStatus(status) {
+            const s = String(status).toLowerCase();
+            if (s.includes('reprov')) return 'status-reprovado';
+            if (s.includes('aprov')) return 'status-aprovado';
+            return 'status-pendente';
+        }
+
+        async function carregarMinhasOS() {
+            if (!usuarioId) return;
+            const lista = document.getElementById('lista-os');
+            const { data } = await sb.from('ordens').select('*').eq('tecnico_id', usuarioId).order('created_at', { ascending: false });
+
+            const ordens = data || [];
+            ordensCarregadas = ordens;
+            document.getElementById('os-pendentes').textContent = ordens.filter(o => String(o.status).toLowerCase()==='pendente').length;
+            document.getElementById('os-reprovadas').textContent = ordens.filter(o => String(o.status).toLowerCase()==='reprovado').length;
+
+            const pend = lerFila();
+            lista.innerHTML = (ordens.length || pend.length) ? '' : '<p class="vazio">Nenhum serviço lançado.</p>';
+            pend.slice().reverse().forEach(p => {
+                lista.innerHTML += `
+                    <div class="os-item" style="cursor:default">
+                        <div class="os-topo"><div class="os-titulo">Protocolo ${escaparHtml(p.protocolo)}</div><span class="status status-pendente">Aguardando envio</span></div>
+                        <div class="os-meta">${escaparHtml(p.empresa)} - ${escaparHtml(p.cliente)}<br>Feita em: ${formatarData(p.criadoEm)}</div>
+                    </div>`;
+            });
+            ordens.forEach((o, i) => {
+                let motivoHtml = '';
+                if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
+                    motivoHtml = `<div style="color:#ff8a80; font-size:13px; margin-top:6px;"><b>Motivo:</b> ${escaparHtml((o.motivo_reprovacao || o.motivo))}</div>`;
+                }
+
+                lista.innerHTML += `
+                    <div class="os-item" onclick="abrirDetalheOS(${i})">
+                        <div class="os-topo"><div class="os-titulo">OS #${o.id}</div><span class="status ${classeStatus(o.status)}">${escaparHtml(o.status)}</span></div>
+                        <div class="os-meta">${escaparHtml(o.empresa)} - ${escaparHtml(o.cliente)}<br>Lançada em: ${formatarData(o.created_at)}${motivoHtml}</div>
+                    </div>`;
+            });
+        }
+
+        window.abrirDetalheOS = function(i) {
+            const o = ordensCarregadas[i];
+            if (!o) return;
+            const box = document.getElementById('os-detalhe');
+            box.classList.remove('hidden');
+
+            let motivoDetalhe = '';
+            if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
+                motivoDetalhe = `<div class="os-campo" style="grid-column: 1 / -1;"><small style="color:#ff8a80">Motivo da Reprovação</small><span style="color:#ff8a80">${escaparHtml((o.motivo_reprovacao || o.motivo))}</span></div>`;
+            }
+
+            box.innerHTML = `
+                <div class="os-topo">
+                    <h3 style="margin:0;color:#4dd0e1">OS #${o.id}</h3>
+                    <span class="status ${classeStatus(o.status)}">${escaparHtml(o.status)}</span>
+                </div>
+                <div class="os-detalhe-grid">
+                    <div class="os-campo"><small>Empresa</small><span>${escaparHtml(o.empresa)}</span></div>
+                    <div class="os-campo"><small>Serviço</small><span>${escaparHtml(o.servico)}</span></div>
+                    <div class="os-campo"><small>Protocolo</small><span>${escaparHtml(o.protocolo)}</span></div>
+                    <div class="os-campo"><small>Data / Hora</small><span>${formatarData(o.created_at)}</span></div>
+                    <div class="os-campo"><small>Cliente</small><span>${escaparHtml(o.cliente)}</span></div>
+                    <div class="os-campo"><small>Status</small><span>${escaparHtml(o.status)}</span></div>
+                    ${motivoDetalhe}
+                </div>
+                <div style="margin-top:8px" class="os-campo">
+                    <small>Observação</small>
+                    <span>${escaparHtml(o.obs || 'Nenhuma')}</span>
+                </div>
+                <button class="secundario" onclick="window.print()">Imprimir / PDF</button>
+                <button class="secundario" onclick="document.getElementById('os-detalhe').classList.add('hidden')">Fechar</button>
+            `;
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ---------- Alterar senha ----------
         function toggleBoxSenha() {
-            document.getElementById('box-senha').classList.toggle('hidden');
+            const box = document.getElementById('box-senha');
+            box.classList.toggle('hidden');
+            document.getElementById('nova_senha').value = '';
+            document.getElementById('nova_senha2').value = '';
+            if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         async function alterarSenha() {
             const s1 = document.getElementById('nova_senha').value;
             const s2 = document.getElementById('nova_senha2').value;
-            if(s1.length < 6) return alert("A senha deve ter pelo menos 6 caracteres.");
-            if(s1 !== s2) return alert("As senhas não coincidem.");
-            
-            document.getElementById('btn-senha').disabled = true;
-            const { error } = await sb.auth.updateUser({ password: s1 });
-            document.getElementById('btn-senha').disabled = false;
-            
-            if (error) alert("Erro ao alterar senha: " + error.message);
-            else { alert("Senha alterada com sucesso!"); toggleBoxSenha(); }
+            if (!navigator.onLine) return alert("Sem internet. Conecte-se para alterar a senha.");
+            if (s1.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
+            if (s1 !== s2) return alert("As senhas não são iguais.");
+
+            const btn = document.getElementById('btn-senha');
+            btn.disabled = true;
+            try {
+                const { error } = await sb.auth.updateUser({ password: s1 });
+                if (error) throw error;
+                alert("Senha alterada com sucesso! Use a nova senha no próximo login.");
+                toggleBoxSenha();
+            } catch (err) {
+                alert("Não foi possível alterar a senha: " + (err.message || err));
+            } finally {
+                btn.disabled = false;
+            }
         }
 
-        // Autenticação ao carregar a página
-        window.onload = async () => {
-            const { data } = await sb.auth.getSession();
-            if (data.session) iniciarApp(data.session.user);
-        };
+        // ---------- Admin (somente Pedro e Izaque) ----------
+        function verificarAdmin(user) {
+            const emailUser = user.email.toLowerCase().trim();
+            const adminsAutorizados = ['pedrohenriquecatharino@gmail.com', 'izaque@tecfibras.com'];
+
+            if (adminsAutorizados.includes(emailUser)) {
+                document.getElementById('tab-admin').classList.remove('hidden');
+                carregarTecnicosAdmin();
+            }
+        }
+
+        async function carregarTecnicosAdmin() {
+            const sel = document.getElementById('adm_tecnico');
+            const { data } = await sb.from('profiles').select('id, nome, email').order('nome');
+            sel.innerHTML = '<option value="">Selecione o técnico...</option>';
+            if (data) data.forEach(t => {
+                const nome = t.nome || t.email;
+                sel.innerHTML += `<option value="${t.id}" data-nome="${escaparHtml(nome)}">${escaparHtml(nome)}</option>`;
+            });
+        }
+
+        async function admEnviarMaterial() {
+            const tecSel = document.getElementById('adm_tecnico');
+            const tecId = tecSel.value;
+            if (!tecId) return alert("Selecione o técnico");
+            const tecNome = tecSel.options[tecSel.selectedIndex].getAttribute('data-nome');
+
+            const drop = parseInt(document.getElementById('adm_qtd_drop').value) || 0;
+            const conector = parseInt(document.getElementById('adm_qtd_conector').value) || 0;
+
+            if (drop === 0 && conector === 0) return alert("Digite quantidades de drop ou conector.");
+
+            document.getElementById('btn-enviar-insumo').disabled = true;
+            const inserts = [];
+            if (drop !== 0) inserts.push({ tecnico_id: tecId, material: 'drop', qtd: drop });
+            if (conector !== 0) inserts.push({ tecnico_id: tecId, material: 'conector', qtd: conector });
+
+            const { error } = await sb.from('movimentos').insert(inserts);
+            document.getElementById('btn-enviar-insumo').disabled = false;
+
+            if (!error) {
+                syncPlanilha({ action: 'movimento_admin', admin: usuarioNome, tecnico: tecNome, drop: drop, conectores: conector, modems: [] });
+                alert("Insumos enviados ao carro!");
+                document.getElementById('adm_qtd_drop').value = ''; document.getElementById('adm_qtd_conector').value = '';
+            } else {
+                alert("Erro ao transferir insumos: " + error.message);
+            }
+        }
+
+        let modemsPendentesAdmin = [];
+        function admAdicionarSerial() {
+            const s = document.getElementById('adm_serial').value.trim();
+            if (s) {
+                modemsPendentesAdmin.push({ serie: s, modelo: document.getElementById('adm_modelo').value.trim() });
+                document.getElementById('adm_serial').value = '';
+                atualizarListaPendentesAdmin();
+            }
+        }
+
+        function atualizarListaPendentesAdmin() {
+            const ul = document.getElementById('adm_pendentes'); ul.innerHTML = '';
+            modemsPendentesAdmin.forEach((m, i) => {
+                ul.innerHTML += `<li><span>${escaparHtml(m.serie)} ${escaparHtml(m.modelo)}</span> <button onclick="modemsPendentesAdmin.splice(${i},1); atualizarListaPendentesAdmin()">X</button></li>`;
+            });
+        }
+
+        document.getElementById('adm_serial').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); admAdicionarSerial(); } });
+
+        async function admEnviarModems() {
+            const tecSel = document.getElementById('adm_tecnico');
+            if (!tecSel.value) return alert("Selecione o técnico.");
+            if (modemsPendentesAdmin.length === 0) return alert("Bipe ao menos um serial antes de enviar.");
+
+            const tecNome = tecSel.options[tecSel.selectedIndex].getAttribute('data-nome');
+
+            const inserts = modemsPendentesAdmin.map(m => ({ serie: m.serie, modelo: m.modelo, tecnico_id: tecSel.value, status: 'estoque' }));
+            document.getElementById('adm_btn_modems').disabled = true;
+            const { error } = await sb.from('modems').insert(inserts);
+            document.getElementById('adm_btn_modems').disabled = false;
+
+            if (!error) {
+                syncPlanilha({ action: 'movimento_admin', admin: usuarioNome, tecnico: tecNome, drop: 0, conectores: 0, modems: modemsPendentesAdmin });
+                alert("Aparelhos transferidos com sucesso!");
+                modemsPendentesAdmin = [];
+                atualizarListaPendentesAdmin();
+            } else {
+                alert("Erro ao transferir aparelhos: " + error.message);
+            }
+        }
+
+        // Reconecta a sessão automaticamente
+        // Botão "Instalar app" (aparece só quando o Chrome permite instalar)
+        let eventoInstalar = null;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            eventoInstalar = e;
+            document.getElementById('btn-instalar').classList.remove('hidden');
+        });
+        window.addEventListener('appinstalled', () => {
+            eventoInstalar = null;
+            document.getElementById('btn-instalar').classList.add('hidden');
+        });
+        async function instalarApp() {
+            if (!eventoInstalar) return;
+            eventoInstalar.prompt();
+            await eventoInstalar.userChoice;
+            eventoInstalar = null;
+            document.getElementById('btn-instalar').classList.add('hidden');
+        }
+
+        function usarUsuarioEmCache() {
+            if (navigator.onLine) return;
+            const u = lerJSON('tf_user', null);
+            if (u && u.id) iniciarApp({ id: u.id, email: u.email });
+        }
+        sb.auth.getSession().then(({ data }) => {
+            if (data?.session) iniciarApp(data.session.user);
+            else usarUsuarioEmCache();
+        }).catch(usarUsuarioEmCache);
+    </script>
+
+    <!-- SERVICE WORKER (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('PWA ativado!'))
+                    .catch(err => console.log('Erro no PWA', err));
+            });
+        }
     </script>
 </body>
 </html>
