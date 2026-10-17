@@ -499,13 +499,18 @@
         async function carregarDashboard() {
             if (!usuarioId) return;
             const hojeInicio = new Date();
-            hojeInicio.setHours(0,0,0,0);
+            hojeInicio.setHours(0, 0, 0, 0);
 
-            const { data } = await sb.from('ordens').select('id, drop, conectores, modem_id').eq('tecnico_id', usuarioId).gte('created_at', hojeInicio.toISOString());
+            // select('*') evita falha quando alguma coluna pedida não existe na tabela
+            const { data, error } = await sb.from('ordens').select('*').eq('tecnico_id', usuarioId).gte('created_at', hojeInicio.toISOString());
+            if (error) throw new Error('painel: ' + error.message);
             const ordensHoje = data || [];
 
-            document.getElementById('dash-os-hoje').textContent = ordensHoje.length;
-            document.getElementById('dash-aparelhos-hoje').textContent = ordensHoje.filter(o => o.modem_id).length;
+            // Conta também as OS feitas sem internet que ainda estão na fila
+            const filaHoje = lerFila().filter(i => new Date(i.criadoEm) >= hojeInicio);
+
+            document.getElementById('dash-os-hoje').textContent = ordensHoje.length + filaHoje.length;
+            document.getElementById('dash-aparelhos-hoje').textContent = ordensHoje.filter(o => o.modem_id).length + filaHoje.filter(i => i.modemId).length;
         }
 
         // ---------- Abas ----------
