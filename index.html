@@ -17,76 +17,79 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; padding: 20px; margin: 0; }
-        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        h2 { text-align: center; color: #4dd0e1; margin-top: 0; }
-        label { font-size: 14px; margin-bottom: 5px; display: block; color: #b0bec5; }
-        input, select, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; box-sizing: border-box; font-size: 16px; }
-        input:focus, select:focus { border-color: #4dd0e1; outline: none; }
-        button { background-color: #4dd0e1; color: #000; border: none; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
-        button:hover { background-color: #26c6da; }
+        :root { --bg:#121212; --surface:#1e1e1e; --card:#252525; --input:#2c2c2c; --border:#333; --text:#ffffff; --muted:#b0bec5; --accent:#4dd0e1; --accent-hover:#26c6da; --on-accent:#000; --danger:#ff8a80; --ok:#80cbc4; --warn:#ffb74d; --st-pend-bg:#5d4b00; --st-pend-fg:#ffe082; --st-ok-bg:#0d4b2a; --st-err-bg:#5b1b1b; }
+        body.claro { --bg:#f2f4f7; --surface:#ffffff; --card:#f7f9fb; --input:#ffffff; --border:#cfd8dc; --text:#1c1c1c; --muted:#546e7a; --accent:#00838f; --accent-hover:#006064; --on-accent:#ffffff; --danger:#c62828; --ok:#00796b; --warn:#e65100; --st-pend-bg:#fff3c4; --st-pend-fg:#7a5b00; --st-ok-bg:#d4f5e9; --st-err-bg:#fde0e0; }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color:var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 400px; margin: 0 auto; background: var(--surface); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: var(--accent); margin-top: 0; }
+        label { font-size: 14px; margin-bottom: 5px; display: block; color: var(--muted); }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid var(--border); background: var(--input); color:var(--text); box-sizing: border-box; font-size: 16px; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        button { background-color: var(--accent); color:var(--on-accent); border: none; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+        button:hover { background-color: var(--accent-hover); }
         button:disabled { opacity: 0.6; cursor: wait; }
-        button.secundario { background: transparent; color: #b0bec5; border: 1px solid #333; font-weight: normal; margin-top: 5px; }
-        button.secundario:hover { background: #2c2c2c; }
+        button.secundario { background: transparent; color: var(--muted); border: 1px solid var(--border); font-weight: normal; margin-top: 5px; }
+        button.secundario:hover { background: var(--input); }
         .hidden { display: none !important; }
-        .materiais-box { border: 1px solid #333; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #252525; }
+        .materiais-box { border: 1px solid var(--border); padding: 15px; border-radius: 6px; margin-bottom: 15px; background: var(--card); }
 
         .tabs { display: flex; gap: 3px; margin-bottom: 20px; }
-        .tabs button { flex: 1 1 auto; min-width: 0; margin: 0; background: #2c2c2c; color: #b0bec5; border: 1px solid #333; font-size: 11px; padding: 10px 4px; white-space: nowrap; text-align: center; }
-        .tabs button.ativa { background: #4dd0e1; color: #000; border-color: #4dd0e1; }
+        .tabs button { flex: 1 1 auto; min-width: 0; margin: 0; background: var(--input); color: var(--muted); border: 1px solid var(--border); font-size: 11px; padding: 10px 4px; white-space: nowrap; text-align: center; }
+        .tabs button.ativa { background: var(--accent); color:var(--on-accent); border-color: var(--accent); }
 
         .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .card { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 12px; text-align: center; font-size: 14px; color: #b0bec5; }
-        .card strong { display: block; font-size: 26px; color: #4dd0e1; margin-bottom: 2px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; font-size: 14px; color: var(--muted); }
+        .card strong { display: block; font-size: 26px; color: var(--accent); margin-bottom: 2px; }
 
         .saudacao-box { text-align: center; margin-bottom: 20px; position: relative; }
-        .saudacao-box h1 { margin: 0; font-size: 22px; color: #fff; }
-        .saudacao-box p { margin: 5px 0 0 0; color: #b0bec5; font-size: 14px; }
+        .saudacao-box h1 { margin: 0; font-size: 22px; color:var(--text); }
+        .saudacao-box p { margin: 5px 0 0 0; color: var(--muted); font-size: 14px; }
         .engrenagem { position: absolute; top: 0; right: 0; width: auto; margin: 0; padding: 4px 8px; background: transparent; font-size: 22px; }
         .engrenagem:hover { background: transparent; }
-        .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 10px; border: 2px solid #4dd0e1; }
-        .avatar-vazio { display: flex; align-items: center; justify-content: center; font-size: 34px; background: #2c2c2c; }
-        .botao-foto { display: block; padding: 12px; text-align: center; background: #4dd0e1; color: #000; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        .dash-alert { display: flex; justify-content: space-between; background: #333; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
-        .dash-alert.critico { border-left: 4px solid #ff8a80; }
-        .dash-alert.ok { border-left: 4px solid #80cbc4; }
+        .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 10px; border: 2px solid var(--accent); }
+        .avatar-vazio { display: flex; align-items: center; justify-content: center; font-size: 34px; background: var(--input); }
+        .botao-foto { display: block; padding: 12px; text-align: center; background: var(--accent); color:var(--on-accent); border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        .dash-alert { display: flex; justify-content: space-between; background: var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
+        .dash-alert.critico { border-left: 4px solid var(--danger); }
+        .dash-alert.ok { border-left: 4px solid var(--ok); }
         .btn-grande { padding: 16px; font-size: 18px; margin-bottom: 10px; }
 
         .lista-modems { list-style: none; padding: 0; margin: 0 0 15px 0; max-height: 280px; overflow-y: auto; }
-        .lista-modems li { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .lista-modems li { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .lista-modems li button { width: auto; margin: 0; padding: 4px 10px; font-size: 13px; }
-        .vazio { color: #b0bec5; font-size: 14px; text-align: center; padding: 10px 0; }
-        .msg-erro { color: #ff8a80; font-size: 14px; margin-bottom: 15px; }
+        .vazio { color: var(--muted); font-size: 14px; text-align: center; padding: 10px 0; }
+        .msg-erro { color: var(--danger); font-size: 14px; margin-bottom: 15px; }
 
-        .os-item { background:#252525; border:1px solid #333; border-radius:8px; padding:13px; margin:10px 0; cursor:pointer; }
-        .os-item:hover { border-color:#4dd0e1; }
+        .os-item { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:13px; margin:10px 0; cursor:pointer; }
+        .os-item:hover { border-color:var(--accent); }
         .os-topo { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
-        .os-titulo { font-weight:bold; color:#fff; }
-        .os-meta { color:#b0bec5; font-size:13px; line-height:1.5; }
+        .os-titulo { font-weight:bold; color:var(--text); }
+        .os-meta { color:var(--muted); font-size:13px; line-height:1.5; }
         .status { display:inline-block; padding:5px 8px; border-radius:20px; font-size:11px; font-weight:bold; text-transform: uppercase; }
-        .status-pendente { background:#5d4b00; color:#ffe082; }
-        .status-aprovado { background:#0d4b2a; color:#80cbc4; }
-        .status-reprovado { background:#5b1b1b; color:#ff8a80; }
+        .status-pendente { background:var(--st-pend-bg); color:var(--st-pend-fg); }
+        .status-aprovado { background:var(--st-ok-bg); color:var(--ok); }
+        .status-reprovado { background:var(--st-err-bg); color:var(--danger); }
         .os-detalhe-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-        .os-campo { background:#1e1e1e; border-radius:6px; padding:9px; }
-        .os-campo small { display:block; color:#78909c; margin-bottom:3px; }
+        .os-campo { background:var(--surface); border-radius:6px; padding:9px; }
+        .os-campo small { display:block; color:var(--muted); margin-bottom:3px; }
 
         .busca { display: flex; gap: 8px; margin-bottom: 10px; }
         .busca input { margin-bottom: 0; }
-        .busca button { width: 52px; margin: 0; font-size: 18px; border: 1px solid #333; }
+        .busca button { width: 52px; margin: 0; font-size: 18px; border: 1px solid var(--border); }
 
         html, body { overscroll-behavior-y: contain; }
         button { -webkit-tap-highlight-color: transparent; }
 
-        .sync-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:15px; font-size:12px; color:#b0bec5; }
+        .sync-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:15px; font-size:12px; color:var(--muted); }
         .sync-bar button { width:auto; margin:0; padding:8px 12px; font-size:13px; flex:0 0 auto; }
         #pendencias button { margin-top:0; }
 
-        .check { display:flex; align-items:center; gap:8px; color:#fff; font-size:14px; margin:8px 0 0; }
+        .check { display:flex; align-items:center; gap:8px; color:var(--text); font-size:14px; margin:8px 0 0; }
         .check input { width:auto; margin:0; padding:0; flex:0 0 auto; }
         #apr_assinatura { width:100%; background:#fff; border-radius:6px; touch-action:none; display:block; margin-bottom:10px; }
-        .apr-texto { font-size:13px; color:#b0bec5; line-height:1.5; }
-        .apr-texto b { color:#fff; }
+        .apr-texto { font-size:13px; color:var(--muted); line-height:1.5; }
+        .apr-texto b { color:var(--text); }
         #apr_riscos, #apr_equip { max-height:260px; overflow-y:auto; margin-top:8px; }
 
         @media (max-width: 420px) {
@@ -147,13 +150,13 @@
             </div>
             <div id="pendencias" class="hidden"></div>
 
-            <h3 style="color:#4dd0e1; margin-bottom: 10px;">Produção de Hoje</h3>
+            <h3 style="color:var(--accent); margin-bottom: 10px;">Produção de Hoje</h3>
             <div class="cards">
                 <div class="card"><strong id="dash-os-hoje">0</strong>OS Lançadas</div>
                 <div class="card"><strong id="dash-aparelhos-hoje">0</strong>Aparelhos Usados</div>
             </div>
 
-            <h3 style="color:#4dd0e1; margin-bottom: 10px;">Status do Estoque</h3>
+            <h3 style="color:var(--accent); margin-bottom: 10px;">Status do Estoque</h3>
             <div id="dash-alerta-drop" class="dash-alert ok"><span>Cabo Drop</span> <strong id="dash-qtd-drop">0m</strong></div>
             <div id="dash-alerta-conector" class="dash-alert ok"><span>Conectores</span> <strong id="dash-qtd-conector">0</strong></div>
             <div id="dash-alerta-modem" class="dash-alert ok"><span>Aparelhos</span> <strong id="dash-qtd-modem">0</strong></div>
@@ -188,7 +191,7 @@
             <input type="text" id="observacao" placeholder="Ex: instaladas 2 câmeras internas">
 
             <div id="materiais-section" class="materiais-box hidden">
-                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">Materiais Gastos / Recolhidos</h3>
+                <h3 style="margin-top: 0; color: var(--muted); font-size: 16px;">Materiais Gastos / Recolhidos</h3>
                 <label id="lbl-drop">Cabo Drop (metros)</label>
                 <input type="text" inputmode="numeric" id="drop" placeholder="Ex: 50">
                 <label id="lbl-conectores">Conectores SC/APC (quantidade)</label>
@@ -215,10 +218,10 @@
 
         <!-- ABA: MEUS SERVIÇOS -->
         <div id="pane-servicos" class="hidden">
-            <p style="font-size:13px; color:#b0bec5; margin-top:0;">Histórico geral para sua conferência. A aprovação é feita periodicamente pela central.</p>
+            <p style="font-size:13px; color:var(--muted); margin-top:0;">Histórico geral para sua conferência. A aprovação é feita periodicamente pela central.</p>
             <div class="cards">
                 <div class="card"><strong id="os-pendentes">0</strong>Pendentes</div>
-                <div class="card"><strong id="os-reprovadas" style="color:#ff8a80">0</strong>Reprovadas</div>
+                <div class="card"><strong id="os-reprovadas" style="color:var(--danger)">0</strong>Reprovadas</div>
             </div>
             <button class="secundario" onclick="carregarMinhasOS()">Atualizar lista</button>
             <div id="lista-os"></div>
@@ -243,14 +246,14 @@
             <select id="adm_tecnico"></select>
 
             <div class="materiais-box">
-                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">1. Transferir Insumos (Drop/Conector)</h3>
+                <h3 style="margin-top: 0; color: var(--muted); font-size: 16px;">1. Transferir Insumos (Drop/Conector)</h3>
                 <input type="text" inputmode="numeric" id="adm_qtd_drop" placeholder="Metros de Drop">
                 <input type="text" inputmode="numeric" id="adm_qtd_conector" placeholder="Qtd. Conectores">
                 <button id="btn-enviar-insumo" onclick="admEnviarMaterial()">Enviar para Carga</button>
             </div>
 
             <div class="materiais-box">
-                <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">2. Transferir Aparelhos (Em Lote)</h3>
+                <h3 style="margin-top: 0; color: var(--muted); font-size: 16px;">2. Transferir Aparelhos (Em Lote)</h3>
                 <input type="text" id="adm_modelo" placeholder="Modelo (Ex: Huawei)">
                 <div class="busca">
                     <input type="text" id="adm_serial" placeholder="Bipe aqui e aperte Enter" autocomplete="off">
@@ -263,7 +266,7 @@
 
         <!-- ABA: APR -->
         <div id="pane-apr" class="hidden">
-            <h3 style="margin-top:0; color:#4dd0e1;">Formulário de APR</h3>
+            <h3 style="margin-top:0; color:var(--accent);">Formulário de APR</h3>
                         <label>Provedor</label>
             <select id="apr_provedor">
                 <option value="">Selecione...</option>
@@ -287,7 +290,7 @@
             <input type="text" id="apr_descricao" placeholder="Ex: Instalação Aérea de internet fibra óptica, manutenção">
 
             <div class="materiais-box">
-                <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Foto do local</h3>
+                <h3 style="margin-top:0; color:var(--muted); font-size:16px;">Foto do local</h3>
                 <img id="apr_img_local" class="hidden" alt="Foto do local" style="width:100%; border-radius:6px; margin-bottom:10px;">
                 <label for="apr_cam_local" class="botao-foto">📷 Abrir câmera</label>
                 <input type="file" id="apr_cam_local" accept="image/*" capture="environment" class="hidden" onchange="pegarFotoApr('local', this)">
@@ -296,7 +299,7 @@
             </div>
 
             <div class="materiais-box">
-                <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Foto da equipe</h3>
+                <h3 style="margin-top:0; color:var(--muted); font-size:16px;">Foto da equipe</h3>
                 <img id="apr_img_equipe" class="hidden" alt="Foto da equipe" style="width:100%; border-radius:6px; margin-bottom:10px;">
                 <label for="apr_cam_equipe" class="botao-foto">📷 Abrir câmera</label>
                 <input type="file" id="apr_cam_equipe" accept="image/*" capture="environment" class="hidden" onchange="pegarFotoApr('equipe', this)">
@@ -305,14 +308,14 @@
             </div>
 
             <div class="materiais-box">
-                <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Análise de riscos</h3>
+                <h3 style="margin-top:0; color:var(--muted); font-size:16px;">Análise de riscos</h3>
                 <label class="check"><input type="checkbox" id="apr_r_predio" onchange="marcarGrupo('predio', this.checked)"> <b>Instalação em Prédio</b></label>
                 <label class="check"><input type="checkbox" id="apr_r_aerea" onchange="marcarGrupo('aerea', this.checked)"> <b>Instalação Aérea (Marcar Todos)</b></label>
                 <div id="apr_riscos"></div>
             </div>
 
             <div class="materiais-box">
-                <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Equipamentos (checklist)</h3>
+                <h3 style="margin-top:0; color:var(--muted); font-size:16px;">Equipamentos (checklist)</h3>
                 <button type="button" class="secundario" onclick="marcarTodos('apr_equip', true)">Selecionar todos</button>
                 <div id="apr_equip"></div>
             </div>
@@ -327,7 +330,7 @@
                 <label class="check"><input type="checkbox" id="apr_epi"> Afirmo que toda equipe está de posse de todos os EPI/EPC necessários.</label>
             </div>
 
-            <h3 style="color:#b0bec5; font-size:16px;">Assinatura do responsável</h3>
+            <h3 style="color:var(--muted); font-size:16px;">Assinatura do responsável</h3>
             <canvas id="apr_assinatura" width="600" height="220"></canvas>
             <button type="button" class="secundario" onclick="limparAssinatura()">Limpar assinatura</button>
 
@@ -335,7 +338,7 @@
             <button type="button" class="secundario" onclick="limparApr()">Limpar formulário</button>
 
             <div id="apr-resultado" class="materiais-box hidden">
-                <p style="margin-top:0; color:#4dd0e1;">APR gerada: <span id="apr-nome"></span></p>
+                <p style="margin-top:0; color:var(--accent);">APR gerada: <span id="apr-nome"></span></p>
                 <button type="button" onclick="compartilharAPR()">📤 Compartilhar PDF</button>
                 <button type="button" class="secundario" onclick="abrirAPR()">👁️ Abrir PDF</button>
                 <a id="apr-baixar" class="botao-foto" style="margin-bottom:0;">⬇️ Baixar PDF</a>
@@ -344,11 +347,13 @@
 
         <!-- PAINEL DA FOTO DE PERFIL -->
         <div id="box-perfil" class="materiais-box hidden">
-            <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Foto de perfil</h3>
-            <p style="font-size:13px; color:#b0bec5; margin-top:0;">A foto fica salva só neste celular.</p>
+            <h3 style="margin-top:0; color:var(--muted); font-size:16px;">Foto de perfil</h3>
+            <p style="font-size:13px; color:var(--muted); margin-top:0;">A foto fica salva só neste celular.</p>
             <label for="input-foto" class="botao-foto">📷 Escolher foto</label>
             <input type="file" id="input-foto" accept="image/*" class="hidden" onchange="salvarFotoPerfil(this)">
             <button class="secundario" onclick="removerFotoPerfil()">Remover foto</button>
+            <h3 style="margin:14px 0 8px 0; color:var(--muted); font-size:16px;">Tema</h3>
+            <button type="button" class="secundario" id="btn-tema" onclick="alternarTema()">☀️ Mudar para tema branco</button>
         </div>
 
         <button id="btn-instalar" class="hidden" onclick="instalarApp()" style="margin-top:20px">📲 Instalar app no celular</button>
@@ -825,8 +830,8 @@
         function atualizarStatusSync() {
             const el = document.getElementById('sync-status');
             if (!el) return;
-            if (!navigator.onLine) { el.style.color = '#ffb74d'; el.textContent = '📵 Sem internet — usando dados salvos'; return; }
-            if (erroSync) { el.style.color = '#ff8a80'; el.textContent = '⚠ ' + erroSync; return; }
+            if (!navigator.onLine) { el.style.color = 'var(--warn)'; el.textContent = '📵 Sem internet — usando dados salvos'; return; }
+            if (erroSync) { el.style.color = 'var(--danger)'; el.textContent = '⚠ ' + erroSync; return; }
             el.style.color = '';
             el.textContent = ultimaSync
                 ? 'Atualizado às ' + ultimaSync.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -906,7 +911,7 @@
             ordens.forEach((o, i) => {
                 let motivoHtml = '';
                 if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
-                    motivoHtml = `<div style="color:#ff8a80; font-size:13px; margin-top:6px;"><b>Motivo:</b> ${escaparHtml((o.motivo_reprovacao || o.motivo))}</div>`;
+                    motivoHtml = `<div style="color:var(--danger); font-size:13px; margin-top:6px;"><b>Motivo:</b> ${escaparHtml((o.motivo_reprovacao || o.motivo))}</div>`;
                 }
 
                 lista.innerHTML += `
@@ -925,12 +930,12 @@
 
             let motivoDetalhe = '';
             if (String(o.status).toLowerCase() === 'reprovado' && (o.motivo_reprovacao || o.motivo)) {
-                motivoDetalhe = `<div class="os-campo" style="grid-column: 1 / -1;"><small style="color:#ff8a80">Motivo da Reprovação</small><span style="color:#ff8a80">${escaparHtml((o.motivo_reprovacao || o.motivo))}</span></div>`;
+                motivoDetalhe = `<div class="os-campo" style="grid-column: 1 / -1;"><small style="color:var(--danger)">Motivo da Reprovação</small><span style="color:var(--danger)">${escaparHtml((o.motivo_reprovacao || o.motivo))}</span></div>`;
             }
 
             box.innerHTML = `
                 <div class="os-topo">
-                    <h3 style="margin:0;color:#4dd0e1">OS #${o.id}</h3>
+                    <h3 style="margin:0;color:var(--accent)">OS #${o.id}</h3>
                     <span class="status ${classeStatus(o.status)}">${escaparHtml(o.status)}</span>
                 </div>
                 <div class="os-detalhe-grid">
@@ -1001,6 +1006,21 @@
             localStorage.removeItem('tf_foto_' + usuarioId);
             aplicarFotoPerfil();
         }
+
+        // ---------- Tema (escuro / branco) ----------
+        function aplicarTema() {
+            const claro = localStorage.getItem('tf_tema') === 'claro';
+            document.body.classList.toggle('claro', claro);
+            const b = document.getElementById('btn-tema');
+            if (b) b.textContent = claro ? '🌙 Voltar para tema escuro' : '☀️ Mudar para tema branco';
+        }
+
+        function alternarTema() {
+            const claro = !document.body.classList.contains('claro');
+            localStorage.setItem('tf_tema', claro ? 'claro' : 'escuro');
+            aplicarTema();
+        }
+        aplicarTema();
 
         // ---------- Alterar senha ----------
         function toggleBoxSenha() {
