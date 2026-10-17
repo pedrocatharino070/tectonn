@@ -7,10 +7,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TecTonn">
+    <meta name="apple-mobile-web-app-title" content="TecFibras">
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <title>TecTonn</title>
+    <title>TecFibras OS</title>
 
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,29 +27,30 @@
         button:disabled { opacity: 0.6; cursor: wait; }
         button.secundario { background: transparent; color: #b0bec5; border: 1px solid #333; font-weight: normal; margin-top: 5px; }
         button.secundario:hover { background: #2c2c2c; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .materiais-box { border: 1px solid #333; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #252525; }
 
-        /* Abas Superiores: todas visíveis, sem rolagem lateral */
         .tabs { display: flex; gap: 3px; margin-bottom: 20px; }
         .tabs button { flex: 1 1 auto; min-width: 0; margin: 0; background: #2c2c2c; color: #b0bec5; border: 1px solid #333; font-size: 11px; padding: 10px 4px; white-space: nowrap; text-align: center; }
         .tabs button.ativa { background: #4dd0e1; color: #000; border-color: #4dd0e1; }
 
-        /* Cards Gerais */
         .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .card { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 12px; text-align: center; font-size: 14px; color: #b0bec5; }
         .card strong { display: block; font-size: 26px; color: #4dd0e1; margin-bottom: 2px; }
 
-        /* Dashboard */
-        .saudacao-box { text-align: center; margin-bottom: 20px; }
+        .saudacao-box { text-align: center; margin-bottom: 20px; position: relative; }
         .saudacao-box h1 { margin: 0; font-size: 22px; color: #fff; }
         .saudacao-box p { margin: 5px 0 0 0; color: #b0bec5; font-size: 14px; }
+        .engrenagem { position: absolute; top: 0; right: 0; width: auto; margin: 0; padding: 4px 8px; background: transparent; font-size: 22px; }
+        .engrenagem:hover { background: transparent; }
+        .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 10px; border: 2px solid #4dd0e1; }
+        .avatar-vazio { display: flex; align-items: center; justify-content: center; font-size: 34px; background: #2c2c2c; }
+        .botao-foto { display: block; padding: 12px; text-align: center; background: #4dd0e1; color: #000; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
         .dash-alert { display: flex; justify-content: space-between; background: #333; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
         .dash-alert.critico { border-left: 4px solid #ff8a80; }
         .dash-alert.ok { border-left: 4px solid #80cbc4; }
         .btn-grande { padding: 16px; font-size: 18px; margin-bottom: 10px; }
 
-        /* Listas e OS */
         .lista-modems { list-style: none; padding: 0; margin: 0 0 15px 0; max-height: 280px; overflow-y: auto; }
         .lista-modems li { background: #252525; border: 1px solid #333; border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .lista-modems li button { width: auto; margin: 0; padding: 4px 10px; font-size: 13px; }
@@ -72,13 +73,6 @@
         .busca { display: flex; gap: 8px; margin-bottom: 10px; }
         .busca input { margin-bottom: 0; }
         .busca button { width: 52px; margin: 0; font-size: 18px; border: 1px solid #333; }
-
-        @font-face { font-family: 'TecTonn'; src: url('fonte-tectonn.ttf') format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
-        .marca { font-family: 'TecTonn', 'Poppins', 'Segoe UI', sans-serif; font-weight: 700; font-style: italic; letter-spacing: 0.5px; text-align: center; line-height: 1.1; }
-        .marca .tec { color: #ffffff; }
-        .marca .tonn { color: #4dd0e1; text-shadow: 0 0 18px rgba(77,208,225,0.35); }
-        .marca-grande { font-size: 44px; margin: 4px 0 6px; }
-        .marca-pequena { font-size: 20px; margin: 0 0 14px; }
 
         html, body { overscroll-behavior-y: contain; }
         button { -webkit-tap-highlight-color: transparent; }
@@ -111,8 +105,7 @@
         <div style="background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:18px;">
             <img src="logo.jpg" alt="TecFibras Telecom" style="width:100%;display:block;">
         </div>
-        <div class="marca marca-grande"><span class="tec">Tec</span><span class="tonn">Tonn</span></div>
-        <p style="text-align:center;color:#b0bec5;margin:0 0 22px;font-size:14px;">Acesso Técnico</p>
+        <h2>Acesso Técnico</h2>
         <input type="email" id="email" placeholder="E-mail de acesso" autocomplete="username">
         <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
         <button id="btn-login" onclick="fazerLogin()">Entrar no Sistema</button>
@@ -120,8 +113,6 @@
 
     <!-- APP PRINCIPAL -->
     <div class="container hidden" id="app-screen">
-
-        <div class="marca marca-pequena"><span class="tec">Tec</span><span class="tonn">Tonn</span></div>
 
         <div class="tabs">
             <button id="tab-inicio" class="ativa" onclick="mostrarAba('inicio')">Início</button>
@@ -134,12 +125,15 @@
         <!-- ABA: INÍCIO -->
         <div id="pane-inicio">
             <div class="saudacao-box">
+                <button class="engrenagem" onclick="abrirPerfil()" title="Perfil">⚙️</button>
+                <img id="foto-perfil" class="avatar hidden" alt="Foto de perfil">
+                <div id="foto-perfil-vazia" class="avatar avatar-vazio">👤</div>
                 <h1 id="dash-saudacao">Bom dia!</h1>
                 <p id="dash-data"></p>
             </div>
 
             <div class="sync-bar">
-                <span id="sync-status">Atualizando...</span>
+                <span id="sync-status">Sincronizando...</span>
                 <button id="btn-sync" class="secundario" onclick="sincronizarTudo(true)">🔄 Sincronizar</button>
             </div>
             <div id="pendencias" class="hidden"></div>
@@ -186,8 +180,10 @@
 
             <div id="materiais-section" class="materiais-box hidden">
                 <h3 style="margin-top: 0; color: #b0bec5; font-size: 16px;">Materiais Gastos / Recolhidos</h3>
-                <input type="number" id="drop" placeholder="Metros de Cabo Drop">
-                <input type="number" id="conectores" placeholder="Quantidade de Conectores SC/APC">
+                <label id="lbl-drop">Cabo Drop (metros)</label>
+                <input type="number" id="drop" placeholder="Ex: 50">
+                <label id="lbl-conectores">Conectores SC/APC (quantidade)</label>
+                <input type="number" id="conectores" placeholder="Ex: 2">
 
                 <label>Movimentou aparelho no estoque?</label>
                 <select id="usou_modem" onchange="toggleModem()">
@@ -256,6 +252,15 @@
             </div>
         </div>
 
+        <!-- PAINEL DA FOTO DE PERFIL -->
+        <div id="box-perfil" class="materiais-box hidden">
+            <h3 style="margin-top:0; color:#b0bec5; font-size:16px;">Foto de perfil</h3>
+            <p style="font-size:13px; color:#b0bec5; margin-top:0;">A foto fica salva só neste celular.</p>
+            <label for="input-foto" class="botao-foto">📷 Escolher foto</label>
+            <input type="file" id="input-foto" accept="image/*" class="hidden" onchange="salvarFotoPerfil(this)">
+            <button class="secundario" onclick="removerFotoPerfil()">Remover foto</button>
+        </div>
+
         <button id="btn-instalar" class="hidden" onclick="instalarApp()" style="margin-top:20px">📲 Instalar app no celular</button>
         <button class="secundario" onclick="toggleBoxSenha()" style="margin-top:20px">🔑 Alterar minha senha</button>
         <div id="box-senha" class="materiais-box hidden">
@@ -296,6 +301,45 @@
         let meusModems = [];
         let ordensCarregadas = [];
 
+        let sincronizando = false;
+        let erroSync = null;
+
+        function ehErroDeSessao(e) {
+            const txt = [e && e.message, e && e.code, e && e.status].join(' ').toLowerCase();
+            return /jwt|pgrst301|401|not authenticated|sessao_expirada/.test(txt);
+        }
+
+        function msgErroSync(e) {
+            if (ehErroDeSessao(e)) return 'sessão expirou, saia e entre de novo';
+            return (e && (e.message || e.details)) || String(e);
+        }
+
+        function comTimeout(promessa, ms = 15000) {
+            return Promise.race([promessa, new Promise((_, rej) => setTimeout(() => rej(new Error('Tempo esgotado (internet lenta)')), ms))]);
+        }
+
+        async function garantirSessao() {
+            const { data } = await comTimeout(sb.auth.getSession());
+            const sessao = data && data.session;
+            const exp = sessao && sessao.expires_at;
+            if (!sessao || (exp && exp * 1000 - Date.now() < 60000)) {
+                const r = await comTimeout(sb.auth.refreshSession());
+                if (r.error || !r.data || !r.data.session) throw new Error('SESSAO_EXPIRADA');
+            }
+        }
+
+        function setTexto(id, valor) { const el = document.getElementById(id); if (el) el.textContent = valor; }
+
+        function lerUsados() { return lerJSON('tf_usados_' + usuarioId, []); }
+
+        function tirarModemLocal(id) {
+            const usados = lerUsados();
+            if (!usados.includes(id)) { usados.push(id); gravarJSON('tf_usados_' + usuarioId, usados); }
+            meusModems = meusModems.filter(m => m.id !== id);
+            const c = lerJSON('tf_cache_' + usuarioId, null);
+            if (c && c.modems) { c.modems = c.modems.filter(m => m.id !== id); gravarJSON('tf_cache_' + usuarioId, c); }
+        }
+
         // ---------- Inicialização ----------
         async function iniciarApp(user) {
             usuarioId = user.id;
@@ -318,7 +362,7 @@
             mostrarAba('inicio');
             atualizarPendencias();
             atualizarStatusSync();
-            processarFila().then(enviou => { if (enviou) { carregarEstoque(); carregarDashboard(); } });
+            sincronizarTudo(false);
         }
 
         async function fazerLogin() {
@@ -352,6 +396,7 @@
 
             document.getElementById('dash-saudacao').textContent = `${saudacao}, ${usuarioNome}!`;
             document.getElementById('dash-data').textContent = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+            aplicarFotoPerfil();
         }
 
         async function carregarDashboard() {
@@ -380,20 +425,24 @@
         // ---------- Estoque ----------
         async function carregarEstoque() {
             if (!usuarioId) return;
-            let saldoBase = null, modemsBase = null;
+            let saldoBase = null, modemsBase = null, erroBusca = null;
             if (navigator.onLine) {
                 try {
+                    await garantirSessao();
                     const [saldoRes, modemsRes] = await Promise.all([
-                        sb.from('saldo').select('material,qtd').eq('tecnico_id', usuarioId),
-                        sb.from('modems').select('id,serie,modelo').eq('tecnico_id', usuarioId).eq('status', 'estoque').order('serie')
+                        comTimeout(sb.from('saldo').select('material,qtd').eq('tecnico_id', usuarioId)),
+                        comTimeout(sb.from('modems').select('id,serie,modelo').eq('tecnico_id', usuarioId).eq('status', 'estoque').order('serie'))
                     ]);
-                    if (!saldoRes.error && !modemsRes.error) {
-                        saldoBase = { drop: 0, conector: 0 };
-                        (saldoRes.data || []).forEach(r => { saldoBase[r.material] = Number(r.qtd) || 0; });
-                        modemsBase = modemsRes.data || [];
-                        gravarJSON('tf_cache_' + usuarioId, { saldo: saldoBase, modems: modemsBase });
-                    }
-                } catch (e) {}
+                    if (saldoRes.error) throw new Error('saldo: ' + saldoRes.error.message);
+                    if (modemsRes.error) throw new Error('aparelhos: ' + modemsRes.error.message);
+                    saldoBase = { drop: 0, conector: 0 };
+                    (saldoRes.data || []).forEach(r => { saldoBase[r.material] = Number(r.qtd) || 0; });
+                    modemsBase = modemsRes.data || [];
+                    // Só mantém como "usado" o aparelho que o servidor ainda lista como estoque
+                    const idsServidor = modemsBase.map(m => m.id);
+                    gravarJSON('tf_usados_' + usuarioId, lerUsados().filter(id => idsServidor.includes(id)));
+                    gravarJSON('tf_cache_' + usuarioId, { saldo: saldoBase, modems: modemsBase });
+                } catch (e) { erroBusca = e; }
             }
             if (!saldoBase) {
                 const c = lerJSON('tf_cache_' + usuarioId, null);
@@ -402,25 +451,28 @@
             saldoBase = saldoBase || { drop: 0, conector: 0 };
             modemsBase = modemsBase || [];
 
-            // Desconta o que está na fila (OS feitas sem internet, ainda não enviadas)
+            // Esconde aparelhos já usados (aqui ou na fila), mesmo que o servidor ainda os mostre
+            const usados = new Set(lerUsados());
             const saldo = { drop: saldoBase.drop, conector: saldoBase.conector };
-            const usados = new Set();
             lerFila().forEach(i => { saldo.drop -= (i.drop || 0); saldo.conector -= (i.conectores || 0); if (i.modemId) usados.add(i.modemId); });
             meusModems = modemsBase.filter(m => !usados.has(m.id));
 
-            document.getElementById('est-drop').textContent = saldo.drop;
-            document.getElementById('est-conector').textContent = saldo.conector;
-            document.getElementById('est-modems-qtd').textContent = meusModems.length;
-            document.getElementById('drop').placeholder = `Metros (saldo: ${saldo.drop})`;
-            document.getElementById('conectores').placeholder = `Qtd (saldo: ${saldo.conector})`;
+            setTexto('est-drop', saldo.drop);
+            setTexto('est-conector', saldo.conector);
+            setTexto('est-modems-qtd', meusModems.length);
+            setTexto('lbl-drop', `Cabo Drop em metros (saldo: ${saldo.drop}m)`);
+            setTexto('lbl-conectores', `Conectores SC/APC em quantidade (saldo: ${saldo.conector})`);
+            setTexto('dash-qtd-drop', `${saldo.drop}m`);
 
             const ul = document.getElementById('lista-modems');
-            ul.innerHTML = meusModems.length === 0 ? '<li class="vazio">Nenhum aparelho.</li>' : '';
-            meusModems.forEach(m => {
-                ul.innerHTML += `<li>${escaparHtml(m.serie)} <span>${escaparHtml(m.modelo || '')}</span></li>`;
-            });
+            if (ul) {
+                ul.innerHTML = meusModems.length === 0 ? '<li class="vazio">Nenhum aparelho.</li>' : '';
+                meusModems.forEach(m => {
+                    ul.innerHTML += `<li>${escaparHtml(m.serie)} <span>${escaparHtml(m.modelo || '')}</span></li>`;
+                });
+            }
+            filtrarModems();
 
-            document.getElementById('dash-qtd-drop').textContent = `${saldo.drop}m`;
             const boxDrop = document.getElementById('dash-alerta-drop');
             if (saldo.drop < 100) { boxDrop.className = 'dash-alert critico'; boxDrop.innerHTML = `<span>Cabo Drop (Baixo)</span> <strong>${saldo.drop}m</strong>`; }
             else { boxDrop.className = 'dash-alert ok'; boxDrop.innerHTML = `<span>Cabo Drop</span> <strong>${saldo.drop}m</strong>`; }
@@ -441,7 +493,7 @@
                 boxModem.innerHTML = `<span>Aparelhos</span> <strong>${meusModems.length}</strong>`;
             }
 
-            filtrarModems();
+            if (erroBusca) throw erroBusca;
         }
 
         // ---------- Formulário de OS ----------
@@ -540,13 +592,14 @@
                 }
 
                 syncPlanilha(payloadPlanilha(item, data));
+                if (modemId) tirarModemLocal(modemId);
                 alert("OS Lançada com sucesso!");
                 limparFormOS();
                 mostrarAba('inicio');
 
             } catch (err) {
-                if (erroDeRede(err)) enfileirarOS(item);
-                else alert("Erro ao salvar: " + err.message);
+                if (erroDeRede(err) || ehErroDeSessao(err)) enfileirarOS(item, ehErroDeSessao(err) ? 'Sua sessão expirou. Saia e entre de novo para enviar.' : null);
+                else alert("Erro ao salvar: " + msgErroSync(err));
             }
             finally { document.getElementById('btn-salvar').disabled = false; }
         }
@@ -566,7 +619,7 @@
 
         function erroDeRede(e) {
             if (!navigator.onLine) return true;
-            return /failed to fetch|networkerror|network request failed|load failed|fetch/i.test(String((e && e.message) || e || ''));
+            return /failed to fetch|networkerror|network request failed|load failed|fetch|tempo esgotado/i.test(String((e && e.message) || e || ''));
         }
 
         async function enviarOS(item, veioDaFila) {
@@ -576,10 +629,11 @@
                 obs = (obs ? obs + ' ' : '') + `[feita offline em ${quando}]`;
             }
             try {
-                return await sb.rpc('registrar_ordem', {
+                await garantirSessao();
+                return await comTimeout(sb.rpc('registrar_ordem', {
                     p_empresa: item.empresa, p_servico: item.servico, p_protocolo: item.protocolo,
                     p_cliente: item.cliente, p_obs: obs, p_drop: item.drop, p_conectores: item.conectores, p_modem: item.modemId
-                });
+                }));
             } catch (e) { return { data: null, error: e }; }
         }
 
@@ -592,15 +646,16 @@
         }
 
         function limparFormOS() {
-            ['protocolo','cliente','observacao','drop','conectores'].forEach(id => document.getElementById(id).value = '');
+            ['protocolo','cliente','observacao','drop','conectores','modem_busca'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('usou_modem').value = 'nao'; toggleModem();
+            document.getElementById('modem_select').value = '';
         }
 
-        function enfileirarOS(item) {
+        function enfileirarOS(item, motivo) {
             const fila = lerFila();
             fila.push(item);
             gravarJSON('tf_fila_' + usuarioId, fila);
-            alert("Sem conexão com a internet.\nA OS foi salva no celular e será enviada automaticamente quando a internet voltar.");
+            alert((motivo || 'Sem conexão com a internet.') + '\nA OS foi salva no celular e será enviada automaticamente.');
             limparFormOS();
             mostrarAba('inicio');
             atualizarPendencias();
@@ -613,22 +668,29 @@
             let mudou = false;
             try {
                 for (const item of lerFila()) {
-                    // Já foi enviada antes (resposta perdida)? Então só tira da fila.
-                    const r = await sb.from('ordens').select('id').eq('tecnico_id', usuarioId)
+                    // Já foi enviada antes (resposta perdida)? Então não manda de novo.
+                    const r = await comTimeout(sb.from('ordens').select('id').eq('tecnico_id', usuarioId)
                         .eq('empresa', item.empresa).eq('protocolo', item.protocolo)
-                        .eq('servico', item.servico).eq('cliente', item.cliente).limit(1);
-                    if (r.error && erroDeRede(r.error)) break;
-                    if (r.data && r.data.length) { removerDaFila(item.uid); mudou = true; continue; }
+                        .eq('servico', item.servico).eq('cliente', item.cliente).limit(1));
+                    if (r.error && (erroDeRede(r.error) || ehErroDeSessao(r.error))) throw r.error;
+                    if (r.data && r.data.length) {
+                        // Já está no banco, mas a planilha pode não ter recebido: envia agora
+                        syncPlanilha(payloadPlanilha(item, r.data[0].id));
+                        if (item.modemId) tirarModemLocal(item.modemId);
+                        removerDaFila(item.uid); mudou = true; continue;
+                    }
 
                     const { data, error } = await enviarOS(item, true);
                     if (error) {
-                        if (erroDeRede(error)) break;
+                        // Falha de rede ou de sessão: a OS continua na fila
+                        if (erroDeRede(error) || ehErroDeSessao(error)) throw error;
                         removerDaFila(item.uid);
-                        guardarErro({ protocolo: item.protocolo, erro: error.message || 'erro desconhecido' });
+                        guardarErro({ protocolo: item.protocolo, erro: msgErroSync(error) });
                         mudou = true;
                         continue;
                     }
                     removerDaFila(item.uid);
+                    if (item.modemId) tirarModemLocal(item.modemId);
                     syncPlanilha(payloadPlanilha(item, data));
                     mudou = true;
                 }
@@ -654,23 +716,36 @@
         function atualizarStatusSync() {
             const el = document.getElementById('sync-status');
             if (!el) return;
-            if (!navigator.onLine) { el.textContent = '📵 Sem internet — usando dados salvos'; return; }
+            if (!navigator.onLine) { el.style.color = '#ffb74d'; el.textContent = '📵 Sem internet — usando dados salvos'; return; }
+            if (erroSync) { el.style.color = '#ff8a80'; el.textContent = '⚠ ' + erroSync; return; }
+            el.style.color = '';
             el.textContent = ultimaSync
                 ? 'Atualizado às ' + ultimaSync.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                : 'Atualizando...';
+                : 'Sincronizando...';
         }
 
         async function sincronizarTudo(manual) {
-            if (!usuarioId) return;
+            if (!usuarioId || sincronizando) return;
+            sincronizando = true;
             const btn = document.getElementById('btn-sync');
             if (manual && btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+            const erros = [];
+            const passo = async (nome, fn) => {
+                try { await fn(); } catch (e) { erros.push(nome + ': ' + msgErroSync(e)); }
+            };
             try {
-                await processarFila();
-                await Promise.all([carregarEstoque(), carregarDashboard()]);
-                if (!document.getElementById('pane-servicos').classList.contains('hidden')) await carregarMinhasOS();
-                if (navigator.onLine) ultimaSync = new Date();
-            } catch (e) {}
-            finally {
+                if (!navigator.onLine) throw new Error('sem internet');
+                await garantirSessao();
+                await passo('fila', processarFila);
+                await passo('estoque', carregarEstoque);
+                await passo('painel', carregarDashboard);
+                if (!document.getElementById('pane-servicos').classList.contains('hidden')) await passo('serviços', carregarMinhasOS);
+            } catch (e) {
+                erros.push(msgErroSync(e));
+            } finally {
+                if (!erros.length) ultimaSync = new Date();
+                erroSync = erros.length ? erros.join(' | ') : null;
+                sincronizando = false;
                 if (btn) { btn.disabled = false; btn.textContent = '🔄 Sincronizar'; }
                 atualizarStatusSync();
                 atualizarPendencias();
@@ -766,6 +841,56 @@
                 <button class="secundario" onclick="document.getElementById('os-detalhe').classList.add('hidden')">Fechar</button>
             `;
             box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ---------- Foto de perfil (guardada neste celular) ----------
+        function abrirPerfil() {
+            const box = document.getElementById('box-perfil');
+            box.classList.toggle('hidden');
+            if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function aplicarFotoPerfil() {
+            const img = document.getElementById('foto-perfil');
+            const vazia = document.getElementById('foto-perfil-vazia');
+            if (!img || !vazia) return;
+            const foto = usuarioId ? lerJSON('tf_foto_' + usuarioId, null) : null;
+            img.src = foto || '';
+            img.classList.toggle('hidden', !foto);
+            vazia.classList.toggle('hidden', !!foto);
+        }
+
+        function salvarFotoPerfil(input) {
+            const arquivo = input.files && input.files[0];
+            input.value = '';
+            if (!arquivo || !usuarioId) return;
+            if (!arquivo.type.startsWith('image/')) return alert('Escolha um arquivo de imagem.');
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const escala = Math.min(200 / img.width, 200 / img.height, 1);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * escala);
+                    canvas.height = Math.round(img.height * escala);
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    try {
+                        localStorage.setItem('tf_foto_' + usuarioId, JSON.stringify(canvas.toDataURL('image/jpeg', 0.8)));
+                        aplicarFotoPerfil();
+                    } catch (e) { alert('Não foi possível salvar a foto.'); }
+                };
+                img.src = leitor.result;
+            };
+            leitor.readAsDataURL(arquivo);
+        }
+
+        function removerFotoPerfil() {
+            if (!usuarioId) return;
+            localStorage.removeItem('tf_foto_' + usuarioId);
+            aplicarFotoPerfil();
         }
 
         // ---------- Alterar senha ----------
@@ -888,7 +1013,6 @@
             }
         }
 
-        // Reconecta a sessão automaticamente
         // Botão "Instalar app" (aparece só quando o Chrome permite instalar)
         let eventoInstalar = null;
         window.addEventListener('beforeinstallprompt', e => {
